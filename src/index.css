@@ -9,4 +9,7 @@
   .hover-grow:hover {
     @apply scale-105;
   }
+  .expand-on-click {
+    @apply absolute top-0 left-0 w-full h-full;
+  }
 }

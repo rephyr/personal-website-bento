@@ -1,4 +1,4 @@
-import BentoBox from "./BentoBox";
+import BentoBox from "./components/BentoBox";
 
 function App() {
 
