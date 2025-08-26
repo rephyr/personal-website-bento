@@ -1,8 +1,16 @@
-function Tech() {
+import React from "react";
+import ExpandableCard from "./ExpandableCard";
+
+function Tech(props) {
   return (
-    <div className="col-span-4 row-span-1 rounded-xl bg-white outline outline-2 outline-pink-300 hover-grow p-6">
-      Tech
-    </div>
+    <ExpandableCard {...props} className="bg-purple-300">
+      {props.expanded ? (
+        <h2 className="text-xl font-bold">Tech Details</h2>
+      ) : (
+        "Tech"
+      )}
+    </ExpandableCard>
   );
 }
+
 export default Tech;

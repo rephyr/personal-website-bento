@@ -1,8 +1,16 @@
-function Cv() {
+import React from "react";
+import ExpandableCard from "./ExpandableCard";
+
+function Cv(props) {
   return (
-    <div className="col-span-1 row-span-1 rounded-xl bg-white outline outline-2 outline-pink-300 hover-grow p-6">
-      CV
-    </div>
+    <ExpandableCard {...props} className="bg-yellow-200">
+      {props.expanded ? (
+        <h2 className="text-xl font-bold">CV Details</h2>
+      ) : (
+        "CV"
+      )}
+    </ExpandableCard>
   );
 }
+
 export default Cv;

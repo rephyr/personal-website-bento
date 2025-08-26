@@ -1,8 +1,16 @@
-function Contact() {
+import React from "react";
+import ExpandableCard from "./ExpandableCard";
+
+function Contact(props) {
   return (
-    <div className="col-span-1 row-span-1 rounded-xl bg-white outline outline-2 outline-pink-300 hover-grow p-6">
-      Contact
-    </div>
+    <ExpandableCard {...props} className="bg-pink-200">
+      {props.expanded ? (
+        <h2 className="text-xl font-bold">Contact Details</h2>
+      ) : (
+        "Contact"
+      )}
+    </ExpandableCard>
   );
 }
+
 export default Contact;
