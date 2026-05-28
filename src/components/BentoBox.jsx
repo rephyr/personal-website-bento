@@ -21,15 +21,22 @@ function BentoBox() {
 
   const { width: W, height: H } = containerSize;
   const gap = 5;
+  const phi = 0.618;
 
   const containerRect = { width: W, height: H };
 
+  // Golden ratio splits
+  const col1 = W * 0.5;               // left / right divide
+  const col2 = W * (0.5 + 0.5 * phi); // contact / cv divide inside right half
+  const row1 = H * (1 - phi);          // overview / projects divide (~38%)
+  const row2 = H * phi;                // contact+cv / tech divide (~62%)
+
   const boxes = [
-    { id: "overview",  component: Overview,  rect: { top: 0,           left: 0,           width: W/2-gap,     height: H/4-gap     } },
-    { id: "projects",  component: Projects,  rect: { top: H/4+gap,     left: 0,           width: W/2-gap,     height: H*3/4-gap   } },
-    { id: "contact",   component: Contact,   rect: { top: 0,           left: W/2+gap,     width: W/4-2*gap,   height: H*3/4-gap   } },
-    { id: "cv",        component: Cv,        rect: { top: 0,           left: W*3/4+gap,   width: W/4-gap,     height: H*3/4-gap   } },
-    { id: "tech",      component: Tech,      rect: { top: H*3/4+gap,   left: W/2+gap,     width: W/2-gap,     height: H/4-gap     } },
+    { id: "overview",  component: Overview,  rect: { top: 0,         left: 0,        width: col1-gap,        height: row1-gap      } },
+    { id: "projects",  component: Projects,  rect: { top: row1+gap,  left: 0,        width: col1-gap,        height: H-row1-gap    } },
+    { id: "contact",   component: Contact,   rect: { top: 0,         left: col1+gap, width: col2-col1-2*gap, height: row2-gap      } },
+    { id: "cv",        component: Cv,        rect: { top: 0,         left: col2+gap, width: W-col2-gap,      height: row2-gap      } },
+    { id: "tech",      component: Tech,      rect: { top: row2+gap,  left: col1+gap, width: W-col1-gap,      height: H-row2-gap    } },
   ];
 
   return (
