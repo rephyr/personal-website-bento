@@ -3,8 +3,15 @@ import ExpandableCard from "./ExpandableCard";
 import theTabImg from "../assets/the-tab-menu.png";
 import smPlayerImg from "../assets/smFilePlaybackExample.gif";
 import weatherImg from "../assets/WeatherappAppPicture.jpg";
+import portfolioImg from "../assets/websitePicture.png";
 
 const projects = [
+  {
+    name: "Personal Portfolio",
+    description: "This portfolio website — a bento grid with a curtain expand effect, world-space photo background, and smooth fade transitions. Built with React, Vite, and Tailwind.",
+    image: portfolioImg,
+    url: "https://github.com/rephyr/personal-website-bento",
+  },
   {
     name: "The Tab",
     description: "A multiplayer CLI drinking game with thermal receipt printer integration. Features real-time score tracking, an all-time leaderboard, and automatic receipt printing after each game.",

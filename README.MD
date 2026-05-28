@@ -1,13 +1,15 @@
 # Personal Portfolio — Emilia Sipola
 
+![Portfolio preview](src/assets/websitePicture.png)
+
 My personal portfolio website built with React, Vite, and Tailwind CSS.
 
 ## Features
 
-- **Bento grid layout** — sections arranged in a mosaic grid that scales to any screen size
-- **Curtain expand effect** — clicking a card expands it to fill the screen while the background photo stays fixed in world space
-- **Fade transitions** — collapsed summaries fade out and detailed content fades in after each card opens
-- **Hover scale** — cards scale up slightly on hover
+- **Bento grid layout**: sections arranged in a mosaic grid that scales to any screen size
+- **Curtain expand effect**: clicking a card expands it to fill the screen while the background photo stays fixed in world space
+- **Fade transitions**: collapsed summaries fade out and detailed content fades in after each card opens
+- **Hover scale**: cards scale up slightly on hover
 
 ## Sections
 
