@@ -6,8 +6,7 @@ const sections = [
     title: "Education",
     items: [
       { role: "B.Sc. Computer Science",  place: "Tampere University",              period: "ongoing",       notes: null },
-      { role: "Matriculation Exam",       place: "Helsinki Science High School",    period: "2018 – 2022",   notes: "Eximia cum laude approbatur" },
-      { role: "Exchange Year",            place: "Liceo V. Cuoco, Italy",           period: "2019 – 2020",   notes: "Cut short by the pandemic" },
+      { role: "Matriculation Exam",       place: "Helsinki Science High School",    period: "2018 – 2022"},
     ],
   },
   {
