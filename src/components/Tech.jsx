@@ -1,6 +1,6 @@
 import React from "react";
 import ExpandableCard from "./ExpandableCard";
-import { SiPython, SiCplusplus, SiReact, SiTailwindcss, SiJavascript, SiHtml5, SiCss, SiPhp, SiSqlite, SiSqlalchemy } from "react-icons/si";
+import { SiPython, SiCplusplus, SiReact, SiTailwindcss, SiJavascript, SiHtml5, SiCss, SiPhp, SiSqlite, SiSqlalchemy, SiGit, SiGitlab } from "react-icons/si";
 import { FaDatabase } from "react-icons/fa";
 import adobePs from "../assets/adobe-photoshop.svg";
 import adobeLr from "../assets/adobe-lightroom.svg";
@@ -36,6 +36,14 @@ const categories = [
       { name: "Photoshop",    img: adobePs },
       { name: "Lightroom",    img: adobeLr },
       { name: "Premiere Pro", img: adobePr },
+    ],
+  },
+  {
+    category: "Tools",
+    description: "Used Git and GitLab for version control and project management in both personal and university projects.",
+    techs: [
+      { name: "Git",    icon: SiGit },
+      { name: "GitLab", icon: SiGitlab },
     ],
   },
   {
