@@ -8,7 +8,7 @@ import portfolioImg from "../assets/websitePicture.png";
 const projects = [
   {
     name: "Personal Portfolio",
-    description: "This portfolio website — a bento grid with a curtain expand effect, world-space photo background, and smooth fade transitions. Built with React, Vite, and Tailwind.",
+    description: "This portfolio website. Website includes bento grid with a curtain expand effect, world-space photo background, and smooth fade transitions. Built with React, Vite, and Tailwind.",
     image: portfolioImg,
     url: "https://github.com/rephyr/personal-website-bento",
   },
