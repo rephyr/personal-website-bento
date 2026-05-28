@@ -12,7 +12,7 @@ function Overview(props) {
           <div className="rounded-lg p-4 bg-black/30 backdrop-blur-sm">
             <p className="text-white/40 text-xs uppercase tracking-widest mb-2">About</p>
             <p className="text-white/80 text-sm leading-relaxed">
-              Software engineer building CLI tools, automation scripts, and web apps.
+              Software developer building CLI tools, automation scripts, and web apps.
               Currently working on <span className="text-white font-semibold">The-Tab</span>. It is a multiplayer
               drinking game with thermal receipt printer integration.
             </p>
@@ -44,7 +44,7 @@ function Overview(props) {
       }
     >
       <h2 className="text-white text-2xl font-bold tracking-wide">Emilia Sipola</h2>
-      <p className="text-white/70 mt-1 text-sm">Software engineer · Tampere, Finland · she/her</p>
+      <p className="text-white/70 mt-1 text-sm">Software developer · Tampere, Finland · she/her</p>
     </ExpandableCard>
   );
 }

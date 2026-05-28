@@ -1,5 +1,6 @@
 import React from "react";
 import ExpandableCard from "./ExpandableCard";
+import cvPdf from "../assets/Emilia_Sipola_CV.pdf";
 
 const sections = [
   {
@@ -47,6 +48,14 @@ function Cv(props) {
       }
       expandedContent={
         <div className="flex flex-col gap-4">
+          <a
+            href={cvPdf}
+            download="Emilia_Sipola_CV.pdf"
+            onClick={(e) => e.stopPropagation()}
+            className="flex items-center justify-center gap-2 rounded-lg p-3 bg-white/10 border border-white/30 text-white text-sm font-semibold hover:bg-white hover:text-black transition-colors"
+          >
+            Download CV (PDF)
+          </a>
           {sections.map((section) => (
             <div key={section.title}>
               <p className="text-white/40 text-xs uppercase tracking-widest mb-2">{section.title}</p>
