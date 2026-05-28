@@ -51,6 +51,9 @@ function Tech(props) {
   return (
     <ExpandableCard
       {...props}
+      collapsedContent={
+        <p className="text-white/50 text-sm">My tech stack</p>
+      }
       expandedContent={
         <div className="space-y-3">
           {categories.map(({ category, description, techs }) => (
