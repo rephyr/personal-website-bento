@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import Overview from "./Overview";
 import Projects from "./Projects";
 import Contact from "./Contact";
@@ -7,21 +7,33 @@ import Tech from "./Tech";
 
 function BentoBox() {
   const [expanded, setExpanded] = useState(null);
+  const containerRef = useRef(null);
+  const [containerSize, setContainerSize] = useState({ width: 900, height: 600 });
 
-  const containerRect = { width: 900, height: 600 };
+  useEffect(() => {
+    const ro = new ResizeObserver(([entry]) => {
+      const { width, height } = entry.contentRect;
+      setContainerSize({ width, height });
+    });
+    if (containerRef.current) ro.observe(containerRef.current);
+    return () => ro.disconnect();
+  }, []);
 
-  const padding = 5; 
+  const { width: W, height: H } = containerSize;
+  const gap = 5;
+
+  const containerRect = { width: W, height: H };
 
   const boxes = [
-    { id: "overview", rect: { top: 0, left: 0, width: 450 - padding, height: 150 - padding }, component: Overview },
-    { id: "projects", rect: { top: 150 + padding, left: 0, width: 450 - padding, height: 450 - padding }, component: Projects },
-    { id: "contact", rect: { top: 0, left: 450 + padding, width: 220 - padding, height: 450 - padding }, component: Contact },
-    { id: "cv", rect: { top: 0, left: 675 + padding, width: 225 - padding, height: 450 - padding }, component: Cv },
-    { id: "tech", rect: { top: 450 + padding, left: 450 + padding, width: 450 - padding, height: 150 - padding }, component: Tech },
+    { id: "overview",  component: Overview,  rect: { top: 0,           left: 0,           width: W/2-gap,     height: H/4-gap     } },
+    { id: "projects",  component: Projects,  rect: { top: H/4+gap,     left: 0,           width: W/2-gap,     height: H*3/4-gap   } },
+    { id: "contact",   component: Contact,   rect: { top: 0,           left: W/2+gap,     width: W/4-2*gap,   height: H*3/4-gap   } },
+    { id: "cv",        component: Cv,        rect: { top: 0,           left: W*3/4+gap,   width: W/4-gap,     height: H*3/4-gap   } },
+    { id: "tech",      component: Tech,      rect: { top: H*3/4+gap,   left: W/2+gap,     width: W/2-gap,     height: H/4-gap     } },
   ];
 
   return (
-    <div className="relative" style={{ width: containerRect.width, height: containerRect.height }}>
+    <div ref={containerRef} className="relative w-full h-full">
       {boxes.map(({ id, rect, component: Component }) => (
         <Component
           key={id}
