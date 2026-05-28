@@ -1,4 +1,4 @@
-# Personal Portfolio — Emilia Sipola
+# Personal Portfolio for Emilia Sipola
 
 ![Portfolio preview](src/assets/websitePicture.png)
 
