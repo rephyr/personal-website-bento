@@ -13,7 +13,7 @@ function Overview(props) {
             <p className="text-white/40 text-xs uppercase tracking-widest mb-2">About</p>
             <p className="text-white/80 text-sm leading-relaxed">
               Software engineer building CLI tools, automation scripts, and web apps.
-              Currently working on <span className="text-white font-semibold">The-Tab</span> — a multiplayer
+              Currently working on <span className="text-white font-semibold">The-Tab</span>. It is a multiplayer
               drinking game with thermal receipt printer integration.
             </p>
           </div>
