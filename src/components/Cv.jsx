@@ -5,67 +5,32 @@ const sections = [
   {
     title: "Education",
     items: [
-      {
-        role: "B.Sc. Computer Science",
-        place: "Tampere University",
-        period: "ongoing",
-        notes: null,
-      },
-      {
-        role: "Matriculation Exam",
-        place: "Helsinki Science High School",
-        period: "2018 – 2022",
-        notes: "Eximia cum laude approbatur",
-      },
-      {
-        role: "Exchange Year",
-        place: "Liceo V. Cuoco, Italy",
-        period: "2019 – 2020",
-        notes: "Cut short by the pandemic",
-      },
+      { role: "B.Sc. Computer Science",  place: "Tampere University",              period: "ongoing",       notes: null },
+      { role: "Matriculation Exam",       place: "Helsinki Science High School",    period: "2018 – 2022",   notes: "Eximia cum laude approbatur" },
+      { role: "Exchange Year",            place: "Liceo V. Cuoco, Italy",           period: "2019 – 2020",   notes: "Cut short by the pandemic" },
     ],
   },
   {
     title: "Experience",
     items: [
-      {
-        role: "Food manufacturing cleaner",
-        place: "ISS Palvelut Oy",
-        period: "Mar – Aug 2023",
-        notes: null,
-      },
-      {
-        role: "Construction Assistant",
-        place: "Asiantuntijamestarit Oy",
-        period: "Summer 2021",
-        notes: null,
-      },
-      {
-        role: "Fencing Coach",
-        place: "Tapanilan Erä",
-        period: "2022",
-        notes: "Coached competitive fencers weekly.",
-      }
+      { role: "Food Manufacturing Cleaner",  place: "ISS Palvelut Oy",          period: "Mar – Aug 2023",  notes: null },
+      { role: "Construction Assistant",      place: "Asiantuntijamestarit Oy",   period: "Summer 2021",     notes: null },
+      { role: "Fencing Coach",               place: "Tapanilan Erä",             period: "2022",            notes: "Coached competitive fencers weekly." },
     ],
   },
   {
     title: "Languages",
     items: [
-      { role: "Finnish",  place: "Native",  period: null, notes: null },
-      { role: "English",  place: "Fluent",  period: null, notes: null },
-      { role: "Swedish",  place: "Basic",   period: null, notes: null },
+      { role: "Finnish",  place: "Native",        period: null, notes: null },
+      { role: "English",  place: "Fluent",         period: null, notes: null },
+      { role: "Swedish",  place: "Basic",          period: null, notes: null },
       { role: "Italian",  place: "Conversational", period: null, notes: null },
     ],
   },
   {
     title: "Athletics",
     items: [
-      {
-        role: "Competitive Fencer",
-        place: "Sabre · 7+ years",
-        period: null,
-        notes: "Finnish men's sabre ranking #1 (2020/21) · U20 national gold 2020",
-      },
+      { role: "Competitive Fencer", place: "Sabre · 7+ years", period: null, notes: "Finnish men's sabre ranking #1 (2020/21) · U20 national gold 2020" },
     ],
   },
 ];
@@ -74,60 +39,36 @@ function Cv(props) {
   return (
     <ExpandableCard
       {...props}
+      collapsedContent={
+        <ul className="space-y-2">
+          {sections.map((s) => (
+            <li key={s.title} className="text-white/70 text-sm">→ {s.title}</li>
+          ))}
+        </ul>
+      }
+      expandedContent={
+        <div className="flex flex-col gap-4">
+          {sections.map((section) => (
+            <div key={section.title}>
+              <p className="text-white/40 text-xs uppercase tracking-widest mb-2">{section.title}</p>
+              <div className="flex flex-col gap-2">
+                {section.items.map((item) => (
+                  <div key={item.role} className="rounded-lg p-3 bg-black/30 backdrop-blur-sm">
+                    <div className="flex justify-between items-start gap-2">
+                      <span className="text-white text-sm font-semibold">{item.role}</span>
+                      {item.period && <span className="text-white/80 text-xs flex-shrink-0">{item.period}</span>}
+                    </div>
+                    <span className="text-white/60 text-xs">{item.place}</span>
+                    {item.notes && <p className="text-white/50 text-xs mt-1 leading-relaxed">{item.notes}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      }
     >
       <h2 className="text-white text-2xl font-bold tracking-wide">CV</h2>
-
-      {/* collapsed: section titles */}
-      <ul
-        style={{
-          position: "absolute",
-          top: 56,
-          left: 16,
-          right: 16,
-          opacity: props.expanded ? 0 : 1,
-          transition: props.expanded ? "opacity 0.2s ease" : "opacity 0.3s ease 0.5s",
-          pointerEvents: "none",
-        }}
-        className="space-y-2"
-      >
-        {sections.map((s) => (
-          <li key={s.title} className="text-white/70 text-sm">→ {s.title}</li>
-        ))}
-      </ul>
-
-      {/* expanded: full CV cards */}
-      <div
-        style={{
-          position: "absolute",
-          top: 56,
-          left: 16,
-          right: 16,
-          bottom: 16,
-          overflowY: "auto",
-          opacity: props.expanded ? 1 : 0,
-          transition: props.expanded ? "opacity 0.4s ease 0.7s" : "opacity 0.15s ease",
-          pointerEvents: props.expanded ? "auto" : "none",
-        }}
-        className="flex flex-col gap-4"
-      >
-        {sections.map((section) => (
-          <div key={section.title}>
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-2">{section.title}</p>
-            <div className="flex flex-col gap-2">
-              {section.items.map((item) => (
-                <div key={item.role} className="rounded-lg p-3 bg-black/30 backdrop-blur-sm">
-                  <div className="flex justify-between items-start gap-2">
-                    <span className="text-white text-sm font-semibold">{item.role}</span>
-                    {item.period && <span className="text-white/80 text-xs flex-shrink-0">{item.period}</span>}
-                  </div>
-                  <span className="text-white/60 text-xs">{item.place}</span>
-                  {item.notes && <p className="text-white/50 text-xs mt-1 leading-relaxed">{item.notes}</p>}
-                </div>
-              ))}
-            </div>
-          </div>
-        ))}
-      </div>
     </ExpandableCard>
   );
 }
