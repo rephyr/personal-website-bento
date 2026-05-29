@@ -2,7 +2,7 @@
 
 ![Portfolio preview](src/assets/websitePicture.png)
 
-🌐 **[emiliasipola.netlify.app](https://emiliasipola.netlify.app/)**
+🌐 **[emiliasipola.software](https://emiliasipola.software/)**
 
 My personal portfolio website built with React, Vite, and Tailwind CSS.
 
