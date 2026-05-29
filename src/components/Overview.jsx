@@ -13,8 +13,8 @@ function Overview(props) {
             <p className="text-white/40 text-xs uppercase tracking-widest mb-2">About</p>
             <p className="text-white/80 text-sm leading-relaxed">
               Software developer building CLI tools, automation scripts, and web apps.
-              Currently working on <span className="text-white font-semibold">The-Tab</span>. A CLI app with
-              thermal receipt printer integration and multiplayer support.
+              Currently working on <span className="text-white font-semibold">Klaava</span>, a realtime tournament
+              gambling game with RFID player cards, FastAPI, and React. Learning full-stack development and AWS.
             </p>
           </div>
           <div className="rounded-lg p-4 bg-black/30 backdrop-blur-sm">
