@@ -30,7 +30,7 @@ const sections = [
   {
     title: "Athletics",
     items: [
-      { role: "Competitive Fencer", place: "Sabre · 7+ years", period: null, notes: "Finnish sabre ranking #1 (2020/21) · U20 national gold 2020" },
+      { role: "Competitive Fencer", place: "Sabre · 9+ years active", period: null, notes: "Finnish sabre ranking #1 (2020/21) · U20 national gold 2020" },
     ],
   },
 ];
