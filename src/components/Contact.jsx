@@ -1,13 +1,12 @@
 import React from "react";
 import ExpandableCard from "./ExpandableCard";
-import { FaGithub, FaLinkedin, FaInstagram, FaDiscord, FaEnvelope } from "react-icons/fa";
+import { FaGithub, FaLinkedin, FaInstagram, FaEnvelope } from "react-icons/fa";
 
 const contacts = [
   { label: "GitHub",    value: "rephyr",                  href: "https://github.com/rephyr",                             icon: FaGithub },
   { label: "LinkedIn",  value: "Emilia Sipola",            href: "https://www.linkedin.com/in/emilia-sipola-597aa7379/",  icon: FaLinkedin },
   { label: "Instagram", value: "@emiliasipolaa",           href: "https://www.instagram.com/emiliasipolaa",               icon: FaInstagram },
-  { label: "Discord",   value: "ainiijoo",                 href: null,                                                    icon: FaDiscord },
-  { label: "Email",     value: "sipolaemiliaa@gmail.com",  href: "mailto:sipolaemiliaa@gmail.com",                        icon: FaEnvelope },
+{ label: "Email",     value: "sipolaemiliaa@gmail.com",  href: "mailto:sipolaemiliaa@gmail.com",                        icon: FaEnvelope },
 ];
 
 function ContactCard({ c }) {

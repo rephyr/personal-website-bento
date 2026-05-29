@@ -14,7 +14,7 @@ const projects = [
   },
   {
     name: "The Tab",
-    description: "A multiplayer CLI drinking game with thermal receipt printer integration. Features real-time score tracking, an all-time leaderboard, and automatic receipt printing after each game.",
+    description: "A CLI app with thermal receipt printer integration. Multiplayer drinking game with real-time score tracking, an all-time leaderboard, and automatic receipt printing after each game.",
     image: theTabImg,
     url: "https://github.com/rephyr/The-Tab",
   },

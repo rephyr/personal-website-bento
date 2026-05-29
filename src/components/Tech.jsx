@@ -20,9 +20,10 @@ const categories = [
   },
   {
     category: "Backend",
-    description: "Used Python for CLI tools and automation scripts. PHP for university coursework. I wrote and coordinated unit tests using CakePHP and PHPUnit on the MMT project management app.",
+    description: "Used Python for CLI tools and automation scripts. C++ for systems programming. PHP for university coursework. I wrote and coordinated unit tests using CakePHP and PHPUnit on the MMT project management app.",
     techs: [
       { name: "Python",     icon: SiPython },
+      { name: "C++",        icon: SiCplusplus },
       { name: "PHP",        icon: SiPhp },
       { name: "SQL",        icon: FaDatabase },
       { name: "SQLite",     icon: SiSqlite },
@@ -44,13 +45,6 @@ const categories = [
     techs: [
       { name: "Git",    icon: SiGit },
       { name: "GitLab", icon: SiGitlab },
-    ],
-  },
-  {
-    category: "Systems",
-    description: "Built SMFilePlayer in C++.A bot that parses .sm rhythm game charts and replays them with precise timing by simulating keyboard inputs.",
-    techs: [
-      { name: "C++", icon: SiCplusplus },
     ],
   },
 ];
