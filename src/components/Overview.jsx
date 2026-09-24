@@ -1,50 +1,48 @@
 import React from "react";
 import ExpandableCard from "./ExpandableCard";
 
+const strengths = ["Fast learner", "Full-stack range", "Competitive discipline", "Precise", "Strong visual intuition"];
+const hobbies = ["Photography", "Fencing", "Programming", "Cooking", "Music"];
+
 function Overview(props) {
   return (
     <ExpandableCard
       {...props}
-      className="rounded-xl"
-      contentTop={72}
+      label="About Emilia"
       expandedContent={
-        <div className="flex flex-col gap-4">
-          <div className="rounded-lg p-4 bg-black/30 backdrop-blur-sm">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-2">About</p>
-            <p className="text-white/80 text-sm leading-relaxed">
+        <div className="grid max-w-6xl gap-4 pb-2 lg:grid-cols-2">
+          <section className="panel">
+            <h3 className="type-label mb-2">About</h3>
+            <p className="text-[15px] leading-relaxed text-white/85">
               Software developer building CLI tools, automation scripts, and web apps.
-              Currently working on <span className="text-white font-semibold">Klaava</span>, a realtime tournament
+              Currently working on <span className="font-semibold text-white">Klaava</span>, a realtime tournament
               gambling game with RFID player cards, FastAPI, and React. Learning full-stack development and AWS.
             </p>
-          </div>
-          <div className="rounded-lg p-4 bg-black/30 backdrop-blur-sm">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-2">Currently</p>
-            <ul className="space-y-1.5 text-white/70 text-sm">
+          </section>
+          <section className="panel">
+            <h3 className="type-label mb-2">Currently</h3>
+            <ul className="space-y-1.5 text-[15px] text-white/85">
               <li>4th year CS student at Tampere University</li>
               <li>Exploring Linux systems and low-level programming</li>
             </ul>
-          </div>
-          <div className="rounded-lg p-4 bg-black/30 backdrop-blur-sm">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-3">Strengths</p>
+          </section>
+          <section className="panel">
+            <h3 className="type-label mb-3">Strengths</h3>
             <div className="flex flex-wrap gap-2">
-              {["Fast learner", "Full-stack range", "Competitive discipline", "Precise", "Strong visual intuition"].map(s => (
-                <span key={s} className="px-3 py-1 text-sm font-semibold text-white border border-white/50 rounded-full bg-white/10 backdrop-blur-sm">{s}</span>
-              ))}
+              {strengths.map((s) => <span key={s} className="chip">{s}</span>)}
             </div>
-          </div>
-          <div className="rounded-lg p-4 bg-black/30 backdrop-blur-sm">
-            <p className="text-white/40 text-xs uppercase tracking-widest mb-3">Hobbies</p>
+          </section>
+          <section className="panel">
+            <h3 className="type-label mb-3">Hobbies</h3>
             <div className="flex flex-wrap gap-2">
-              {["Photography", "Fencing", "Programming", "Cooking", "Music"].map(h => (
-                <span key={h} className="px-3 py-1 text-sm font-semibold text-white border border-white/50 rounded-full bg-white/10 backdrop-blur-sm">{h}</span>
-              ))}
+              {hobbies.map((h) => <span key={h} className="chip">{h}</span>)}
             </div>
-          </div>
+          </section>
         </div>
       }
     >
-      <h2 className="text-white text-2xl font-bold tracking-wide">Emilia Sipola</h2>
-      <p className="text-white/70 mt-1 text-sm">Software developer · Tampere, Finland · she/her</p>
+      <h1 className="type-display">Emilia Sipola</h1>
+      <p className="mt-2 text-sm text-white/75">Software developer · Tampere, Finland · she/her</p>
     </ExpandableCard>
   );
 }

@@ -1,9 +1,21 @@
 import React from "react";
+import { FaGithub } from "react-icons/fa";
 import ExpandableCard from "./ExpandableCard";
 import theTabImg from "../assets/the-tab-menu.png";
 import smPlayerImg from "../assets/smFilePlaybackExample.gif";
 import weatherImg from "../assets/WeatherappAppPicture.jpg";
-import portfolioImg from "../assets/websitePicture.png";
+import portfolioImg from "../assets/portfolio.webp";
+import saveTimelapseImg from "../assets/save-timelapse.gif";
+
+// North star project: first in the hint list and featured above the others when opened
+const featured = {
+  name: "Save Timelapse",
+  // Written for recruiters who don't know Factorio: why it's hard, not how it works
+  description: "Turns a long playthrough of Factorio, a game about building huge automated factories, into an interactive timelapse. The challenge is scale: one factory can hold hundreds of thousands of objects, so it's built in Rust from the ground up for performance, with its own file format, renderer and video export.",
+  stack: ["Rust", "Lua"],
+  image: saveTimelapseImg,
+  url: "https://github.com/rephyr/save-timelapse",
+};
 
 const projects = [
   {
@@ -36,38 +48,57 @@ function Projects(props) {
   return (
     <ExpandableCard
       {...props}
-      contentTop={80}
+      label="Projects"
       collapsedContent={
-        <ul className="space-y-3">
-          {projects.map((p) => (
-            <li key={p.name} className="text-white/70 text-sm">→ {p.name}</li>
-          ))}
+        <ul className="space-y-1.5 text-sm text-white/75">
+          <li className="text-white">{featured.name}</li>
+          {projects.map((p) => <li key={p.name}>{p.name}</li>)}
         </ul>
       }
       expandedContent={
-        <div className="flex flex-col gap-4">
+        <div className="grid max-w-6xl gap-4 pb-2 md:grid-cols-2">
+          <article className="flex flex-col overflow-hidden rounded-xl bg-black/45 ring-1 ring-white/10 backdrop-blur-sm md:col-span-2 lg:flex-row">
+            <img
+              src={featured.image}
+              alt={`${featured.name} replaying a Factorio factory as it grows`}
+              className="aspect-[21/9] w-full object-cover lg:aspect-auto lg:w-3/5"
+            />
+            <div className="flex flex-1 flex-col gap-2 p-5">
+              <p className="type-label">Featured project</p>
+              <h3 className="type-title">{featured.name}</h3>
+              <p className="flex-1 text-sm leading-relaxed text-white/75">{featured.description}</p>
+              <p className="text-[13px] text-white/60">{featured.stack.join(" · ")}</p>
+              <a
+                href={featured.url}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="btn-outline mt-2 self-start"
+              >
+                <FaGithub /> View on GitHub
+              </a>
+            </div>
+          </article>
           {projects.map((project) => (
-            <div key={project.name} className="flex flex-row rounded-lg overflow-hidden bg-black/30 backdrop-blur-sm h-28">
-              <img src={project.image} alt={project.name} className="w-40 h-full object-cover flex-shrink-0" />
-              <div className="p-3 flex flex-col gap-1 flex-1 min-w-0">
-                <h3 className="text-white font-bold text-sm">{project.name}</h3>
-                <p className="text-white/60 text-xs leading-relaxed flex-1 line-clamp-3">{project.description}</p>
+            <article key={project.name} className="flex flex-col overflow-hidden rounded-xl bg-black/45 ring-1 ring-white/10 backdrop-blur-sm">
+              <img src={project.image} alt={`Screenshot of ${project.name}`} className="aspect-[5/2] w-full object-cover object-top" />
+              <div className="flex flex-1 flex-col gap-2 p-4">
+                <h3 className="font-semibold text-white">{project.name}</h3>
+                <p className="flex-1 text-sm leading-relaxed text-white/75">{project.description}</p>
                 <a
                   href={project.url}
                   target="_blank"
                   rel="noopener noreferrer"
-                  onClick={(e) => e.stopPropagation()}
-                  className="text-xs text-white/80 border border-white/30 rounded px-2 py-1 self-start hover:bg-white hover:text-black transition-colors"
+                  className="btn-outline mt-2 self-start"
                 >
-                  View on GitHub →
+                  <FaGithub /> View on GitHub
                 </a>
               </div>
-            </div>
+            </article>
           ))}
         </div>
       }
     >
-      <h2 className="text-white text-2xl font-bold tracking-wide">Projects</h2>
+      <h2 className="type-title">Projects</h2>
     </ExpandableCard>
   );
 }

@@ -1,4 +1,5 @@
 import React from "react";
+import { FiDownload } from "react-icons/fi";
 import ExpandableCard from "./ExpandableCard";
 import cvPdf from "../assets/Emilia_Sipola_CV.pdf";
 
@@ -39,44 +40,42 @@ function Cv(props) {
   return (
     <ExpandableCard
       {...props}
+      label="CV"
       collapsedContent={
-        <ul className="space-y-2">
-          {sections.map((s) => (
-            <li key={s.title} className="text-white/70 text-sm">→ {s.title}</li>
-          ))}
+        <ul className="space-y-1.5 text-sm text-white/75">
+          {sections.map((s) => <li key={s.title}>{s.title}</li>)}
         </ul>
       }
       expandedContent={
-        <div className="flex flex-col gap-4">
-          <a
-            href={cvPdf}
-            download="Emilia_Sipola_CV.pdf"
-            onClick={(e) => e.stopPropagation()}
-            className="flex items-center justify-center gap-2 rounded-lg p-3 bg-white/10 border border-white/30 text-white text-sm font-semibold hover:bg-white hover:text-black transition-colors"
-          >
-            Download CV (PDF)
-          </a>
-          {sections.map((section) => (
-            <div key={section.title}>
-              <p className="text-white/40 text-xs uppercase tracking-widest mb-2">{section.title}</p>
-              <div className="flex flex-col gap-2">
-                {section.items.map((item) => (
-                  <div key={item.role} className="rounded-lg p-3 bg-black/30 backdrop-blur-sm">
-                    <div className="flex justify-between items-start gap-2">
-                      <span className="text-white text-sm font-semibold">{item.role}</span>
-                      {item.period && <span className="text-white/80 text-xs flex-shrink-0">{item.period}</span>}
+        <div className="max-w-6xl pb-2">
+          <div className="mb-6 flex">
+            <a href={cvPdf} download="Emilia_Sipola_CV.pdf" className="btn-primary">
+              <FiDownload /> Download PDF
+            </a>
+          </div>
+          <div className="gap-6 lg:columns-2">
+            {sections.map((section) => (
+              <section key={section.title} className="mb-6 break-inside-avoid">
+                <h3 className="type-label mb-2">{section.title}</h3>
+                <div className="flex flex-col gap-2">
+                  {section.items.map((item) => (
+                    <div key={item.role} className="panel p-3">
+                      <div className="flex items-start justify-between gap-2">
+                        <span className="text-sm font-semibold text-white">{item.role}</span>
+                        {item.period && <span className="flex-shrink-0 text-xs text-white/75">{item.period}</span>}
+                      </div>
+                      <span className="text-sm text-white/70">{item.place}</span>
+                      {item.notes && <p className="mt-1 text-sm leading-relaxed text-white/70">{item.notes}</p>}
                     </div>
-                    <span className="text-white/60 text-xs">{item.place}</span>
-                    {item.notes && <p className="text-white/50 text-xs mt-1 leading-relaxed">{item.notes}</p>}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
         </div>
       }
     >
-      <h2 className="text-white text-2xl font-bold tracking-wide">CV</h2>
+      <h2 className="type-title">CV</h2>
     </ExpandableCard>
   );
 }

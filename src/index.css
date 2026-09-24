@@ -2,33 +2,93 @@
 @tailwind components;
 @tailwind utilities;
 
-@layer utilities {
-  .hover-grow {
-    @apply transform transition-transform duration-1000 ease-in-out;
+@layer base {
+  html {
+    color-scheme: dark;
   }
-  .hover-grow:hover {
-    @apply scale-105;
+  body {
+    @apply bg-neutral-950 font-sans text-white antialiased;
+  }
+}
+
+@layer components {
+  /* Type scale. cqw = % of the bento grid's width, so headings grow with the grid */
+  .type-display {
+    @apply font-display leading-none tracking-tight text-white;
+    font-size: clamp(2.25rem, 4.2cqw, 3.75rem);
+  }
+  .type-title {
+    @apply font-display leading-tight text-white;
+    font-size: clamp(1.5rem, 2.1cqw, 2rem);
+  }
+  .type-label {
+    @apply text-[11px] font-medium uppercase tracking-[0.18em] text-white/60;
   }
 
-  /* Bento container */
-  .bento-container {
-    @apply relative w-[600px] h-[600px] mx-auto border border-gray-300 p-4 bg-gray-100;
+  .panel {
+    @apply rounded-xl bg-black/45 p-4 ring-1 ring-white/10 backdrop-blur-sm;
   }
 
-  /* Individual boxes */
-  .box {
-    @apply inline-block w-[150px] h-[150px] m-2 bg-blue-300 rounded-lg shadow cursor-pointer
-           text-center text-gray-800 font-semibold leading-[150px] transition-all duration-500 ease-in-out relative align-top;
+  .chip {
+    @apply inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm font-medium text-white;
   }
 
-  /* Expanded box */
-  .box-expanded {
-    @apply absolute top-0 left-0 z-10 w-full h-full bg-blue-600 text-white text-xl p-6 overflow-auto
-           leading-normal;
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent;
   }
+  .btn-primary {
+    @apply btn bg-white text-neutral-950 hover:bg-accent;
+  }
+  .btn-outline {
+    @apply btn border border-white/30 text-white hover:border-accent hover:text-accent;
+  }
+}
 
-  /* Dim other boxes when one is expanded */
-  .dimmed {
-    @apply opacity-30 pointer-events-none transition-opacity duration-300 ease-in-out;
+/* Flashlight. Registered so the browser can animate them: the light grows/shrinks and trails the cursor slightly */
+@property --spot-x { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --spot-y { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --spot-r { syntax: "<length>"; inherits: true; initial-value: 0px; }
+
+.spotlight-world {
+  transition: --spot-r 0.6s ease, --spot-x 0.12s linear, --spot-y 0.12s linear;
+}
+
+/* Dims the photo everywhere except a soft circle around the cursor (world coordinates) */
+.spotlight {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: rgb(0 0 0 / 0.45);
+  transition: opacity 1.2s ease;
+  -webkit-mask-image: radial-gradient(circle at var(--spot-x) var(--spot-y), transparent calc(var(--spot-r) * 0.25), black var(--spot-r));
+  mask-image: radial-gradient(circle at var(--spot-x) var(--spot-y), transparent calc(var(--spot-r) * 0.25), black var(--spot-r));
+}
+
+/* ...and gently brightens the photo inside the circle, so it reads as light rather than a hole */
+.spotlight-glow {
+  display: none;
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  mix-blend-mode: soft-light;
+  background: radial-gradient(circle at var(--spot-x) var(--spot-y), rgb(255 255 255 / 0.4), transparent var(--spot-r));
+  transition: opacity 1.2s ease;
+}
+
+/* Mouse and trackpad only; touch screens keep the plain photo */
+@media (hover: hover) and (pointer: fine) {
+  .spotlight,
+  .spotlight-glow {
+    display: block;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .bento-card,
+  .bento-card * {
+    transition-duration: 0.01ms !important;
+    transition-delay: 0s !important;
   }
 }

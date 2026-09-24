@@ -49,36 +49,40 @@ const categories = [
   },
 ];
 
+function TechIcon({ tech: { icon: Icon, img } }) {
+  return img
+    ? <img src={img} alt="" className="h-[1em] w-[1em] flex-shrink-0" />
+    : <Icon aria-hidden="true" className="flex-shrink-0" />;
+}
+
 function Tech(props) {
   return (
     <ExpandableCard
       {...props}
+      label="Tech stack"
       collapsedContent={
-        <p className="text-white/50 text-sm">My tech stack</p>
+        <p className="text-sm text-white/75">React, Python, C++ and more</p>
       }
       expandedContent={
-        <div className="space-y-3">
+        <div className="grid max-w-6xl gap-4 pb-2 lg:grid-cols-2">
           {categories.map(({ category, description, techs }) => (
-            <div key={category} className="rounded-lg p-3 bg-black/20 backdrop-blur-sm space-y-2">
-              <p className="text-white/40 text-xs uppercase tracking-widest">{category}</p>
-              <p className="text-white/60 text-xs leading-relaxed">{description}</p>
-              <div className="flex flex-wrap gap-2 pt-1">
-                {techs.map(({ name, icon: Icon, img }) => (
-                  <span key={name} className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white border border-white/50 rounded-full bg-white/10 backdrop-blur-sm">
-                    {img
-                      ? <img src={img} style={{ width: 18, height: 18, flexShrink: 0 }} alt={name} />
-                      : <Icon className="text-lg" />
-                    }
-                    {name}
+            <section key={category} className="panel space-y-3">
+              <h3 className="type-label">{category}</h3>
+              <p className="text-sm leading-relaxed text-white/75">{description}</p>
+              <div className="flex flex-wrap gap-2">
+                {techs.map((tech) => (
+                  <span key={tech.name} className="chip text-base">
+                    <TechIcon tech={tech} />
+                    <span className="text-sm">{tech.name}</span>
                   </span>
                 ))}
               </div>
-            </div>
+            </section>
           ))}
         </div>
       }
     >
-      <h2 className="text-white text-2xl font-bold tracking-wide">Tech</h2>
+      <h2 className="type-title">Tech</h2>
     </ExpandableCard>
   );
 }
