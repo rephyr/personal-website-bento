@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* One family of curves for the reveal */
+  --ease-reveal: cubic-bezier(0.7, 0, 0.12, 1); /* windows opening and closing */
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);    /* things settling */
+}
+
 @layer base {
   html {
     color-scheme: dark;
@@ -25,23 +31,21 @@
     @apply text-[11px] font-medium uppercase tracking-[0.18em] text-white/60;
   }
 
-  .panel {
-    @apply rounded-xl bg-black/45 p-4 ring-1 ring-white/10 backdrop-blur-sm;
-  }
-
   .chip {
-    @apply inline-flex items-center gap-2 rounded-full border border-white/25 bg-white/10 px-3 py-1.5 text-sm font-medium text-white;
+    @apply inline-flex items-center gap-1.5 rounded-full border border-white/20 px-2.5 py-1 text-[13px] text-white/85;
   }
 
   .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3 py-2 text-sm font-semibold transition-colors
-           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent;
+    @apply inline-flex items-center justify-center gap-2 rounded-lg px-3.5 py-2.5 text-sm font-semibold transition-colors
+           focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-neutral-950;
   }
   .btn-primary {
     @apply btn bg-white text-neutral-950 hover:bg-accent;
   }
-  .btn-outline {
-    @apply btn border border-white/30 text-white hover:border-accent hover:text-accent;
+
+  .link-quiet {
+    @apply inline-flex shrink-0 items-center gap-1.5 rounded text-[13px] font-medium text-white/70 transition-colors
+           hover:text-accent focus-visible:text-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent;
   }
 }
 
@@ -85,10 +89,493 @@
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
-  .bento-card,
-  .bento-card * {
-    transition-duration: 0.01ms !important;
-    transition-delay: 0s !important;
+/* ------------------------------------------------------------------ */
+/* Layers                                                              */
+/* ------------------------------------------------------------------ */
+
+/* Card padding, same as the grid's p-5 / xl:p-6 */
+.world {
+  --pad: 20px;
+}
+@media (min-width: 1280px) {
+  .world {
+    --pad: 24px;
   }
+}
+
+/* A full-size layer; only its window (clip-path) shows */
+.sheet {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+
+.photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
+}
+
+/* The grid's card shadow (shadow-xl shadow-black/40), and a deeper one for a lifted layer */
+.sheet-shadow {
+  position: absolute;
+  border-radius: 16px;
+  transform-origin: 0 0;
+  pointer-events: none;
+  box-shadow:
+    0 20px 25px -5px rgb(0 0 0 / 0.4),
+    0 8px 10px -6px rgb(0 0 0 / 0.4);
+}
+.sheet-shadow.is-lift {
+  box-shadow:
+    0 0 0 1px rgb(0 0 0 / 0.35),
+    0 26px 50px -10px rgb(0 0 0 / 0.75),
+    0 0 34px rgb(0 0 0 / 0.45);
+}
+
+/* The window */
+.sheet-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: auto;
+}
+
+/* Edge light of a lifted layer: shows only in the sliver between the outer and inner windows.
+   Invisible at rest, so the cells' anti-aliased edges match the original grid exactly. */
+.sheet-ring {
+  position: absolute;
+  inset: 0;
+  background: rgb(255 255 255 / 0.42);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+.sheet-layer.is-focus .sheet-ring {
+  background: theme("colors.accent");
+}
+.sheet.is-peek .sheet-ring {
+  opacity: 1;
+}
+
+.sheet-inner {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  background: theme("colors.neutral.900");
+}
+
+.card-box {
+  position: absolute;
+  pointer-events: none;
+}
+
+.sheet-open {
+  position: absolute;
+  cursor: pointer;
+  background: transparent;
+  outline: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: box-shadow 0.3s ease;
+}
+/* Focus normally shows as the accent edge of the lifted layer; when focus comes back
+   after closing, the trigger's own ring shows once the window is home */
+.sheet-open:focus-visible {
+  box-shadow: inset 0 0 0 2px theme("colors.accent");
+}
+.sheet.is-peek .sheet-open:focus-visible,
+.sheet.is-closing .sheet-open:focus-visible {
+  box-shadow: inset 0 0 0 2px transparent;
+}
+.world:not([data-intro="done"]) .sheet-open {
+  cursor: default;
+}
+
+/* On phones the hint steps aside when opened, so the text can start right under the title */
+.card-hint {
+  transition: opacity 0.35s ease;
+}
+.world[data-mode="stacked"] .sheet.is-open .card-hint {
+  opacity: 0;
+}
+.sheet.is-open .card-arrow {
+  opacity: 0;
+}
+
+/* Reading light for an open layer: the photo keeps the left half, the text gets the right */
+.open-scrim {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.7s ease;
+  background:
+    linear-gradient(to bottom, rgb(0 0 0 / 0.5), rgb(0 0 0 / 0) 34%),
+    linear-gradient(90deg, rgb(8 8 8 / 0.12) 0%, rgb(8 8 8 / 0.12) 40%, rgb(8 8 8 / 0.62) 48%, rgb(8 8 8 / 0.84) 54%, rgb(8 8 8 / 0.88));
+}
+.world[data-mode="stacked"] .open-scrim {
+  background: rgb(8 8 8 / 0.74);
+}
+.sheet.is-open .open-scrim {
+  opacity: 1;
+  transition-duration: 1s;
+}
+
+/* The grid's centre line, drawn back in as the page divides into photo and text */
+.plate-spine {
+  position: absolute;
+  top: var(--pad);
+  bottom: var(--pad);
+  width: 1px;
+  background: linear-gradient(to bottom, rgb(255 255 255 / 0), rgb(255 255 255 / 0.16) 12%, rgb(255 255 255 / 0.16) 88%, rgb(255 255 255 / 0));
+  transform: scaleY(0);
+  transform-origin: top center;
+  pointer-events: none;
+  transition: transform 0.25s ease;
+}
+.sheet.is-open .plate-spine {
+  transform: scaleY(1);
+  transition: transform 1.2s var(--ease-reveal) 300ms;
+}
+
+.sheet-close {
+  position: absolute;
+  z-index: 30;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  opacity: 0;
+  animation: fade-in 0.5s ease 0.45s forwards;
+}
+.sheet-close kbd {
+  border: 1px solid rgb(255 255 255 / 0.2);
+  border-radius: 5px;
+  padding: 2px 6px;
+  font-family: inherit;
+  font-size: 10px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.5);
+}
+.sheet-close button {
+  @apply grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/30 bg-black/30 text-xl text-white transition-colors
+         hover:bg-white hover:text-black focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent;
+}
+/* Keyboard hint only where there's likely a keyboard */
+@media (hover: none) {
+  .sheet-close kbd {
+    display: none;
+  }
+}
+
+@keyframes fade-in {
+  to { opacity: 1; }
+}
+
+/* ---- opened content ---- */
+
+.plate {
+  position: absolute;
+  z-index: 25;
+  visibility: hidden;
+  overflow: hidden;
+  transition: visibility 0s linear 0.25s;
+}
+.sheet.is-open .plate {
+  visibility: visible;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transition: none;
+  scrollbar-width: thin;
+  scrollbar-color: rgb(255 255 255 / 0.2) transparent;
+}
+.plate-inner {
+  max-width: 44rem;
+  padding: 0 10px 18px 0;
+}
+
+/* A column that scrolls says so: soft edges where there's more to read */
+.fade-below {
+  -webkit-mask-image: linear-gradient(to bottom, black calc(100% - 56px), transparent);
+  mask-image: linear-gradient(to bottom, black calc(100% - 56px), transparent);
+}
+.fade-above {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 40px);
+  mask-image: linear-gradient(to bottom, transparent, black 40px);
+}
+.fade-above.fade-below {
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 40px, black calc(100% - 56px), transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 40px, black calc(100% - 56px), transparent);
+}
+
+/* Blocks develop in one after another once the window has mostly opened */
+.develop {
+  opacity: 0;
+  transform: translate3d(0, 14px, 0);
+  transition: opacity 0.18s ease, transform 0.18s ease;
+}
+.sheet.is-open .develop {
+  opacity: 1;
+  transform: none;
+  transition:
+    opacity 0.8s var(--ease-out) calc(420ms + var(--i) * 80ms),
+    transform 1s var(--ease-out) calc(420ms + var(--i) * 80ms);
+}
+
+.plate-block + .plate-block {
+  margin-top: 1.7rem;
+}
+.plate-lede {
+  margin-top: 0.7rem;
+  max-width: 38rem;
+  font-size: 16.5px;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 0.86);
+}
+.plate-body {
+  font-size: 14px;
+  line-height: 1.6;
+  color: rgb(255 255 255 / 0.72);
+}
+
+.rule-list {
+  margin-top: 0.55rem;
+}
+.rule-list > li {
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  padding: 6px 0;
+  font-size: 15px;
+  color: rgb(255 255 255 / 0.86);
+}
+.rule-top {
+  border-top: 1px solid rgb(255 255 255 / 0.14);
+  padding-top: 14px;
+}
+
+.project-list > li + li {
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+}
+.project {
+  display: grid;
+  grid-template-columns: 7rem minmax(0, 1fr);
+  gap: 1.1rem;
+  align-items: start;
+  padding: 0.95rem 0;
+}
+.project:first-child {
+  padding-top: 0;
+}
+.project-shot {
+  width: 100%;
+  aspect-ratio: 8 / 5;
+  object-fit: cover;
+  object-position: top;
+  border-radius: 6px;
+  box-shadow: 0 0 0 1px rgb(255 255 255 / 0.12);
+  /* Screenshots sit in monochrome with the photo and develop into colour on hover */
+  filter: grayscale(1) brightness(0.82) contrast(1.05);
+  transition: filter 0.7s ease;
+}
+.project:hover .project-shot,
+.project:focus-within .project-shot {
+  filter: none;
+}
+.project-name {
+  font-family: theme("fontFamily.display");
+  font-size: 24px;
+  line-height: 1.05;
+  color: #fff;
+}
+
+/* Featured (north star) project: full column width above the list */
+.project-feature {
+  padding-bottom: 1.3rem;
+  margin-bottom: 1.1rem;
+  border-bottom: 1px solid rgb(255 255 255 / 0.1);
+}
+.project-feature .project-shot {
+  aspect-ratio: 21 / 9;
+  object-position: center;
+}
+.project-feature:hover .project-shot,
+.project-feature:focus-within .project-shot {
+  filter: none;
+}
+.project-feature .project-name {
+  font-size: 32px;
+}
+
+.cv-download {
+  margin-bottom: 1.6rem;
+}
+.cv-section {
+  margin-bottom: 1.5rem;
+}
+.cv-list {
+  margin-top: 0.5rem;
+}
+.cv-item {
+  border-top: 1px solid rgb(255 255 255 / 0.1);
+  padding: 8px 0;
+}
+.cv-role {
+  font-size: 15px;
+  font-weight: 500;
+  color: #fff;
+}
+.cv-period {
+  flex-shrink: 0;
+  font-size: 12px;
+  font-variant-numeric: tabular-nums;
+  color: rgb(255 255 255 / 0.58);
+}
+.cv-place {
+  display: block;
+  font-size: 14px;
+  color: rgb(255 255 255 / 0.66);
+}
+.cv-item.flex .cv-place {
+  display: inline;
+}
+.cv-notes {
+  margin-top: 3px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: rgb(255 255 255 / 0.62);
+}
+
+.contact-list > li:first-child .contact-row {
+  border-top: 0;
+  padding-top: 0.2rem;
+}
+.contact-row {
+  display: grid;
+  grid-template-columns: 7.5rem minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: 1rem;
+  border-top: 1px solid rgb(255 255 255 / 0.12);
+  padding: 1.05rem 0.25rem 1.05rem 0;
+  outline: none;
+  transition: color 0.25s ease;
+}
+.contact-list > li:last-child .contact-row {
+  border-bottom: 1px solid rgb(255 255 255 / 0.12);
+}
+.contact-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 11px;
+  font-weight: 500;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgb(255 255 255 / 0.6);
+}
+.contact-value {
+  font-family: theme("fontFamily.display");
+  font-size: clamp(24px, 2.4cqw, 36px);
+  line-height: 1.1;
+  color: #fff;
+  overflow-wrap: anywhere;
+  transition: color 0.25s ease;
+}
+.contact-arrow {
+  align-self: center;
+  font-size: 20px;
+  color: rgb(255 255 255 / 0.4);
+  transition: color 0.25s ease, transform 0.4s var(--ease-out);
+}
+.contact-row:hover .contact-value,
+.contact-row:focus-visible .contact-value,
+.contact-row:hover .contact-arrow,
+.contact-row:focus-visible .contact-arrow {
+  color: theme("colors.accent");
+}
+.contact-row:hover .contact-arrow,
+.contact-row:focus-visible .contact-arrow {
+  transform: translate(2px, -2px);
+}
+.contact-row:focus-visible {
+  box-shadow: 0 0 0 2px theme("colors.accent");
+  border-radius: 4px;
+}
+
+/* Phones */
+.world[data-mode="stacked"] .contact-row {
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 0.35rem 1rem;
+}
+.world[data-mode="stacked"] .contact-label {
+  grid-column: 1 / -1;
+}
+.world[data-mode="stacked"] .contact-value {
+  font-size: 26px;
+}
+.world[data-mode="stacked"] .project {
+  grid-template-columns: 5.5rem minmax(0, 1fr);
+  gap: 0.9rem;
+}
+.world[data-mode="stacked"] .project-name {
+  font-size: 22px;
+}
+.world[data-mode="stacked"] .project-feature .project-name {
+  font-size: 27px;
+}
+.world[data-mode="stacked"] .plate-inner {
+  padding-right: 0;
+}
+
+/* Laptop-height screens: same layout, tighter leading */
+@media (max-height: 880px) {
+  .world[data-mode="grid"] .plate-lede { font-size: 15.5px; line-height: 1.55; }
+  .world[data-mode="grid"] .plate-body { font-size: 13.5px; line-height: 1.55; }
+  .world[data-mode="grid"] .plate-block + .plate-block { margin-top: 1.3rem; }
+  .world[data-mode="grid"] .rule-list > li { padding: 5px 0; font-size: 14.5px; }
+  .world[data-mode="grid"] .project { grid-template-columns: 6rem minmax(0, 1fr); gap: 0.95rem; padding: 0.75rem 0; }
+  .world[data-mode="grid"] .project:first-child { padding-top: 0; }
+  .world[data-mode="grid"] .project-name { font-size: 21px; }
+  .world[data-mode="grid"] .project-feature .project-name { font-size: 28px; }
+  .world[data-mode="grid"] .cv-item { padding: 6px 0; }
+  .world[data-mode="grid"] .cv-download { margin-bottom: 1.2rem; }
+  .world[data-mode="grid"] .cv-section { margin-bottom: 1.1rem; }
+  .world[data-mode="grid"] .tech-grid { row-gap: 1.4rem; }
+  .world[data-mode="grid"] .contact-row { padding-block: 0.85rem; }
+}
+
+/* ------------------------------------------------------------------ */
+/* Housekeeping                                                        */
+/* ------------------------------------------------------------------ */
+
+.world.is-resizing .sheet,
+.world.is-resizing .sheet-layer,
+.world.is-resizing .sheet-inner,
+.world.is-resizing .sheet-shadow,
+.world.is-resizing .card-box {
+  transition: none !important;
+}
+
+/* Calm version: no travel, just quick fades */
+.world.is-reduced .develop,
+.world.is-reduced .open-scrim,
+.world.is-reduced .card-hint {
+  transition-duration: 0.2s !important;
+  transition-delay: 0s !important;
+}
+.world.is-reduced .develop,
+.world.is-reduced .plate-spine {
+  transform: none !important;
+}
+.world.is-reduced .plate-spine {
+  opacity: 0;
+  transition: opacity 0.2s ease !important;
+}
+.world.is-reduced .sheet.is-open .plate-spine {
+  opacity: 1;
+}
+.world.is-reduced .sheet-close {
+  animation-duration: 0.2s;
+  animation-delay: 0s;
 }

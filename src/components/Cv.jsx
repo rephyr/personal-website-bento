@@ -1,6 +1,5 @@
-import React from "react";
 import { FiDownload } from "react-icons/fi";
-import ExpandableCard from "./ExpandableCard";
+import Sheet, { Develop } from "./Sheet";
 import cvPdf from "../assets/Emilia_Sipola_CV.pdf";
 
 const sections = [
@@ -36,47 +35,63 @@ const sections = [
   },
 ];
 
-function Cv(props) {
+function CvSection({ section, i }) {
+  // Languages read best as one line each: "Finnish ... Native"
+  const compact = section.items.every((item) => !item.period && !item.notes);
   return (
-    <ExpandableCard
-      {...props}
+    <Develop as="section" i={i} className="cv-section">
+      <h3 className="type-label">{section.title}</h3>
+      <ul className="cv-list">
+        {section.items.map((item) =>
+          compact ? (
+            <li key={item.role} className="cv-item flex items-baseline justify-between gap-3">
+              <span className="cv-role">{item.role}</span>
+              <span className="cv-place">{item.place}</span>
+            </li>
+          ) : (
+            <li key={item.role} className="cv-item">
+              <div className="flex items-baseline justify-between gap-3">
+                <span className="cv-role">{item.role}</span>
+                {item.period && <span className="cv-period">{item.period}</span>}
+              </div>
+              <span className="cv-place">{item.place}</span>
+              {item.notes && <p className="cv-notes">{item.notes}</p>}
+            </li>
+          ),
+        )}
+      </ul>
+    </Develop>
+  );
+}
+
+function Cv({ sheet }) {
+  return (
+    <Sheet
+      sheet={sheet}
       label="CV"
-      collapsedContent={
+      title={<h2 className="type-title">CV</h2>}
+      hint={
         <ul className="space-y-1.5 text-sm text-white/75">
           {sections.map((s) => <li key={s.title}>{s.title}</li>)}
         </ul>
       }
-      expandedContent={
-        <div className="max-w-6xl pb-2">
-          <div className="mb-6 flex">
-            <a href={cvPdf} download="Emilia_Sipola_CV.pdf" className="btn-primary">
-              <FiDownload /> Download PDF
-            </a>
-          </div>
-          <div className="gap-6 lg:columns-2">
-            {sections.map((section) => (
-              <section key={section.title} className="mb-6 break-inside-avoid">
-                <h3 className="type-label mb-2">{section.title}</h3>
-                <div className="flex flex-col gap-2">
-                  {section.items.map((item) => (
-                    <div key={item.role} className="panel p-3">
-                      <div className="flex items-start justify-between gap-2">
-                        <span className="text-sm font-semibold text-white">{item.role}</span>
-                        {item.period && <span className="flex-shrink-0 text-xs text-white/75">{item.period}</span>}
-                      </div>
-                      <span className="text-sm text-white/70">{item.place}</span>
-                      {item.notes && <p className="mt-1 text-sm leading-relaxed text-white/70">{item.notes}</p>}
-                    </div>
-                  ))}
-                </div>
-              </section>
-            ))}
-          </div>
-        </div>
-      }
     >
-      <h2 className="type-title">CV</h2>
-    </ExpandableCard>
+      <Develop i={0} className="cv-download">
+        <a href={cvPdf} download="Emilia_Sipola_CV.pdf" className="btn-primary">
+          <FiDownload aria-hidden="true" /> Download PDF
+        </a>
+      </Develop>
+      <div className="grid gap-x-10 lg:grid-cols-2">
+        <div>
+          <CvSection section={sections[0]} i={1} />
+          <CvSection section={sections[1]} i={2} />
+        </div>
+        <div>
+          <CvSection section={sections[2]} i={3} />
+          <CvSection section={sections[3]} i={4} />
+        </div>
+      </div>
+    </Sheet>
   );
 }
 

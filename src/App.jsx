@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import BentoBox from "./components/BentoBox";
+import LayerStack from "./components/LayerStack";
 
 // Phones and short landscape screens get a single scrolling column
 const STACKED_QUERY = "(max-width: 767px), (max-height: 499px)";
@@ -28,7 +28,7 @@ function App() {
   return (
     <main className="h-dvh w-full flex items-center justify-center bg-neutral-950">
       <div style={frame}>
-        <BentoBox stacked={stacked} />
+        <LayerStack stacked={stacked} />
       </div>
     </main>
   );

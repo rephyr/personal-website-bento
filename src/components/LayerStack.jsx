@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Overview from "./Overview";
 import Projects from "./Projects";
 import Contact from "./Contact";
@@ -6,8 +6,18 @@ import Cv from "./Cv";
 import Tech from "./Tech";
 import photo from "../assets/background.webp";
 
+/*
+  The golden-ratio bento, built from layers.
+
+  Every section is a layer the size of the whole frame, holding the whole photo. At rest
+  each layer is clipped (clip-path) down to its own golden-ratio cell, so the page looks
+  like five cards cut from one photograph. The box is bigger than its window: hover lets
+  a layer slide out past its cell, and opening one grows its window to the full frame.
+*/
+
 const GAP = 14;
 const PHI = 0.618;
+const RADIUS = 16;
 const SPOT_RADIUS = "300px";
 
 // Intro timing (ms): photo shows whole, then splits into cards, then text arrives
@@ -15,11 +25,11 @@ const WHOLE_FOR = 1100;
 const SPLIT_FOR = 800;
 
 const CARDS = [
-  { id: "overview", component: Overview },
-  { id: "projects", component: Projects },
-  { id: "contact",  component: Contact },
-  { id: "cv",       component: Cv },
-  { id: "tech",     component: Tech },
+  { id: "overview", Component: Overview },
+  { id: "projects", Component: Projects },
+  { id: "contact",  Component: Contact },
+  { id: "cv",       Component: Cv },
+  { id: "tech",     Component: Tech },
 ];
 
 // Desktop: golden-ratio bento filling the frame
@@ -68,35 +78,34 @@ function setVars(el, vars) {
   for (const [name, value] of Object.entries(vars)) el?.style.setProperty(name, value);
 }
 
-function BentoBox({ stacked }) {
-  const [expanded, setExpanded] = useState(null);
-  const [scrollTop, setScrollTop] = useState(0);
+function LayerStack({ stacked }) {
   const containerRef = useRef(null);
   const worldRef = useRef(null);
   const pointerInside = useRef(false);
   const [containerSize, setContainerSize] = useState({ width: 900, height: 600 });
+  const [openId, setOpenId] = useState(null);
+  const [peek, setPeek] = useState(null); // { id, via: "hover" | "focus" }
+  const [scrollTop, setScrollTop] = useState(0);
+  const [resizing, setResizing] = useState(false);
+  const reduced = useRef(prefersReducedMotion()).current;
 
   // "whole" → one seamless photo, "split" → gaps open, "done" → text and flashlight on
-  const [intro, setIntro] = useState(() => (prefersReducedMotion() ? "done" : "whole"));
+  const [intro, setIntro] = useState(() => (reduced ? "done" : "whole"));
   const [photoReady, setPhotoReady] = useState(false);
 
   useEffect(() => {
+    let timer;
     const ro = new ResizeObserver(([entry]) => {
       const { width, height } = entry.contentRect;
       setContainerSize({ width, height });
+      // Snap instead of animating the windows while the browser is being resized
+      setResizing(true);
+      clearTimeout(timer);
+      timer = setTimeout(() => setResizing(false), 150);
     });
     if (containerRef.current) ro.observe(containerRef.current);
-    return () => ro.disconnect();
+    return () => { ro.disconnect(); clearTimeout(timer); };
   }, []);
-
-  useEffect(() => {
-    if (!expanded) return;
-    const onKeyDown = (e) => {
-      if (e.key === "Escape") setExpanded(null);
-    };
-    window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
-  }, [expanded]);
 
   // Don't start the intro until the photo is decoded, or the split plays over a blank frame
   useEffect(() => {
@@ -116,12 +125,52 @@ function BentoBox({ stacked }) {
     return () => { clearTimeout(toSplit); clearTimeout(toDone); };
   }, [photoReady]);
 
-  // Flashlight: the world tracks the pointer in CSS vars that every card's photo layer masks against
+  // An open layer is a history entry, so Back (or a phone's back gesture) closes it
+  const goingBack = useRef(false);
+  useEffect(() => {
+    if (window.history.state?.layer) window.history.replaceState(null, "");
+    const onPopState = (e) => {
+      goingBack.current = false;
+      setOpenId(e.state?.layer ?? null);
+    };
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, []);
+
+  const open = useCallback((id) => {
+    setScrollTop(containerRef.current.scrollTop);
+    setIntro("done");
+    setPeek(null);
+    setOpenId(id);
+    window.history.pushState({ layer: id }, "");
+  }, []);
+
+  const close = useCallback(() => {
+    // Only ever step back over our own entry, and only once, so a double Esc can't leave the site
+    if (goingBack.current) return;
+    if (window.history.state?.layer) {
+      goingBack.current = true;
+      window.history.back();
+    } else {
+      setOpenId(null);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!openId) return;
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") close();
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [openId, close]);
+
+  // Flashlight: the world tracks the pointer in CSS vars that every layer's photo masks against
   const setSpot = (vars) => setVars(worldRef.current, vars);
 
   useEffect(() => {
-    setVars(worldRef.current, { "--spot-r": pointerInside.current && !expanded ? SPOT_RADIUS : "0px" });
-  }, [expanded]);
+    setVars(worldRef.current, { "--spot-r": pointerInside.current && !openId ? SPOT_RADIUS : "0px" });
+  }, [openId]);
 
   const onPointerMove = (e) => {
     if (e.pointerType !== "mouse") return;
@@ -129,7 +178,7 @@ function BentoBox({ stacked }) {
     setSpot({ "--spot-x": `${e.clientX - r.left}px`, "--spot-y": `${e.clientY - r.top}px` });
     if (!pointerInside.current) {
       pointerInside.current = true;
-      if (!expanded) setSpot({ "--spot-r": SPOT_RADIUS });
+      if (!openId) setSpot({ "--spot-r": SPOT_RADIUS });
     }
   };
 
@@ -143,25 +192,34 @@ function BentoBox({ stacked }) {
   const { width: W, height: H } = containerSize;
   const { world, rects } = stacked ? stackedLayout(W, gap) : gridLayout(W, H, gap);
 
-  // An expanded card fills whatever part of the world is currently scrolled into view
-  const viewport = { top: scrollTop, left: 0, width: W, height: H };
+  // Where an open layer's window ends up: the whole frame, or on phones whatever part of
+  // the column is scrolled into view
+  const openRect = stacked
+    ? { top: scrollTop, left: 0, width: W, height: H }
+    : { top: 0, left: 0, width: W, height: H };
 
-  const expand = (id) => {
-    setScrollTop(containerRef.current.scrollTop);
-    setExpanded(id);
+  // Opened content always sits in the right half of the golden-ratio grid, clear of the bird
+  const column = stacked ? null : { left: W * 0.5 + GAP / 2 };
+
+  const stateOf = (id) => {
+    if (openId) return openId === id ? "open" : "dim";
+    if (peek) return peek.id === id ? "peek" : "shade";
+    return "rest";
   };
 
   return (
     <div
       ref={containerRef}
-      className={`relative w-full h-full ${stacked && !expanded ? "overflow-y-auto" : "overflow-hidden"}`}
+      className={`relative h-full w-full ${stacked && !openId ? "overflow-y-auto" : "overflow-hidden"}`}
       style={stacked ? { scrollbarGutter: "stable" } : undefined}
     >
       <div
         ref={worldRef}
         onPointerMove={onPointerMove}
         onPointerLeave={onPointerLeave}
-        className="spotlight-world relative"
+        className={`world spotlight-world relative ${resizing ? "is-resizing" : ""} ${reduced ? "is-reduced" : ""}`}
+        data-mode={stacked ? "stacked" : "grid"}
+        data-intro={intro}
         style={{
           width: world.width,
           height: world.height,
@@ -185,19 +243,30 @@ function BentoBox({ stacked }) {
           />
         )}
 
-        {CARDS.map(({ id, component: Component }, order) => (
+        {CARDS.map(({ id, Component }, order) => (
           <Component
             key={id}
-            expanded={expanded === id}
-            onExpand={() => expand(id)}
-            onClose={() => setExpanded(null)}
-            dimmed={!!expanded && expanded !== id}
-            rect={rects[id]}
-            viewport={viewport}
-            world={world}
-            split={split}
-            revealed={intro === "done"}
-            order={order}
+            sheet={{
+              id,
+              order,
+              count: CARDS.length,
+              rect: rects[id],
+              world,
+              openRect,
+              column,
+              stacked,
+              radius: split ? RADIUS : 0,
+              state: stateOf(id),
+              peekVia: peek?.id === id ? peek.via : null,
+              anyOpen: !!openId,
+              split,
+              revealed: intro === "done",
+              reduced,
+              photo,
+              onOpen: () => open(id),
+              onClose: close,
+              onPeek: (via) => setPeek((cur) => (via ? { id, via } : cur?.id === id ? null : cur)),
+            }}
           />
         ))}
       </div>
@@ -205,4 +274,4 @@ function BentoBox({ stacked }) {
   );
 }
 
-export default BentoBox;
+export default LayerStack;

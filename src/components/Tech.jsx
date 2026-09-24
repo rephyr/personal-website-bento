@@ -1,5 +1,4 @@
-import React from "react";
-import ExpandableCard from "./ExpandableCard";
+import Sheet, { Develop } from "./Sheet";
 import { SiPython, SiCplusplus, SiReact, SiTailwindcss, SiJavascript, SiHtml5, SiCss, SiPhp, SiSqlite, SiSqlalchemy, SiGit, SiGitlab } from "react-icons/si";
 import { FaDatabase } from "react-icons/fa";
 import adobePs from "../assets/adobe-photoshop.svg";
@@ -55,35 +54,31 @@ function TechIcon({ tech: { icon: Icon, img } }) {
     : <Icon aria-hidden="true" className="flex-shrink-0" />;
 }
 
-function Tech(props) {
+function Tech({ sheet }) {
   return (
-    <ExpandableCard
-      {...props}
+    <Sheet
+      sheet={sheet}
       label="Tech stack"
-      collapsedContent={
-        <p className="text-sm text-white/75">React, Python, C++ and more</p>
-      }
-      expandedContent={
-        <div className="grid max-w-6xl gap-4 pb-2 lg:grid-cols-2">
-          {categories.map(({ category, description, techs }) => (
-            <section key={category} className="panel space-y-3">
-              <h3 className="type-label">{category}</h3>
-              <p className="text-sm leading-relaxed text-white/75">{description}</p>
-              <div className="flex flex-wrap gap-2">
-                {techs.map((tech) => (
-                  <span key={tech.name} className="chip text-base">
-                    <TechIcon tech={tech} />
-                    <span className="text-sm">{tech.name}</span>
-                  </span>
-                ))}
-              </div>
-            </section>
-          ))}
-        </div>
-      }
+      title={<h2 className="type-title">Tech</h2>}
+      hint={<p className="text-sm text-white/75">React, Python, C++ and more</p>}
     >
-      <h2 className="type-title">Tech</h2>
-    </ExpandableCard>
+      <div className="tech-grid grid gap-x-10 gap-y-8 lg:grid-cols-2">
+        {categories.map(({ category, description, techs }, i) => (
+          <Develop key={category} as="section" i={i} className="rule-top">
+            <h3 className="type-label">{category}</h3>
+            <p className="plate-body mt-2.5">{description}</p>
+            <ul className="mt-3.5 flex flex-wrap gap-1.5">
+              {techs.map((tech) => (
+                <li key={tech.name} className="chip">
+                  <TechIcon tech={tech} />
+                  <span>{tech.name}</span>
+                </li>
+              ))}
+            </ul>
+          </Develop>
+        ))}
+      </div>
+    </Sheet>
   );
 }
 

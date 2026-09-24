@@ -1,6 +1,6 @@
-import React from "react";
-import ExpandableCard from "./ExpandableCard";
+import Sheet, { Develop } from "./Sheet";
 import { FaGithub, FaLinkedin, FaInstagram, FaEnvelope } from "react-icons/fa";
+import { FiArrowUpRight } from "react-icons/fi";
 
 const contacts = [
   { label: "GitHub",    value: "rephyr",                  href: "https://github.com/rephyr",                             icon: FaGithub },
@@ -13,28 +13,13 @@ const contacts = [
 const linkProps = (href) =>
   href.startsWith("http") ? { href, target: "_blank", rel: "noopener noreferrer" } : { href };
 
-function ContactCard({ c }) {
-  const Icon = c.icon;
+function Contact({ sheet }) {
   return (
-    <a
-      {...linkProps(c.href)}
-      className="panel flex items-center gap-4 p-5 transition-colors hover:bg-white/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent"
-    >
-      <Icon className="flex-shrink-0 text-2xl text-white/70" />
-      <div className="flex min-w-0 flex-col gap-1">
-        <span className="type-label">{c.label}</span>
-        <span className="truncate text-base font-medium text-white">{c.value}</span>
-      </div>
-    </a>
-  );
-}
-
-function Contact(props) {
-  return (
-    <ExpandableCard
-      {...props}
+    <Sheet
+      sheet={sheet}
       label="Contact"
-      collapsedContent={
+      title={<h2 className="type-title">Contact</h2>}
+      hint={
         <ul className="flex gap-3 text-base text-white/75">
           {contacts.map(({ label, icon: Icon }) => (
             <li key={label}>
@@ -44,14 +29,22 @@ function Contact(props) {
           ))}
         </ul>
       }
-      expandedContent={
-        <div className="grid max-w-4xl gap-3 pb-2 md:grid-cols-2">
-          {contacts.map((c) => <ContactCard key={c.label} c={c} />)}
-        </div>
-      }
     >
-      <h2 className="type-title">Contact</h2>
-    </ExpandableCard>
+      <ul className="contact-list">
+        {contacts.map(({ label, value, href, icon: Icon }, i) => (
+          <Develop key={label} as="li" i={i}>
+            <a {...linkProps(href)} className="contact-row">
+              <span className="contact-label">
+                <Icon aria-hidden="true" className="text-base" />
+                {label}
+              </span>
+              <span className="contact-value">{value}</span>
+              <FiArrowUpRight aria-hidden="true" className="contact-arrow" />
+            </a>
+          </Develop>
+        ))}
+      </ul>
+    </Sheet>
   );
 }
 
