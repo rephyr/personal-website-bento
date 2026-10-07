@@ -6,8 +6,8 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ['Inter', ...defaultTheme.fontFamily.sans],
-        display: ['"Instrument Serif"', ...defaultTheme.fontFamily.serif],
+        sans: ['Geist', ...defaultTheme.fontFamily.sans],
+        display: ['Geist', ...defaultTheme.fontFamily.sans],
       },
       colors: {
         // The one accent colour: hover, focus and call-to-action states only

@@ -1,25 +1,27 @@
-import { useEffect, useId, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useRef, useState } from "react";
 import { FiArrowUpRight, FiX } from "react-icons/fi";
 
-// Intro split, same as the original bento
-const MOVE = "0.7s ease-in-out";
+// Intro: each cut opens decisively and lands softly
+const MOVE = "0.56s cubic-bezier(0.5, 0, 0.1, 1)";
 
 // Durations (ms); the curves live in index.css
-const OPEN = 950;
-const CLOSE = 800;
-const PEEK = 20; // how far a layer slides out past its cell on hover: the gutter and a little more
+const OPEN = 700;
+const CLOSE = 560;
+const PEEK = 5; // how far a hovered layer lifts out past its cell: a little, so the gutter survives
 
-// Darkens only the top of a collapsed card, where its title and hint sit
-const SCRIM = "linear-gradient(to bottom, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0.25) 45%, rgba(0,0,0,0) 80%)";
+const px = (n) => `${n}px`;
 
-// clip-path for a window onto a full-size layer
-function insetOf(r, world, grow, round) {
-  const top = r.top - grow;
-  const left = r.left - grow;
-  const right = world.width - r.left - r.width - grow;
-  const bottom = world.height - r.top - r.height - grow;
-  return `inset(${top}px ${right}px ${bottom}px ${left}px round ${round}px)`;
-}
+/*
+  One set of numbers moves everything. The window (clip-path), its shadow, the card's scrim,
+  its edge ring and the title all read the same registered custom properties (index.css), so
+  they're sampled on the same thread in the same frame and can't drift apart mid-transition.
+
+  --wt/--wr/--wb/--wl  the window's insets from the world's edges (its cell, or the open frame)
+  --gt/--gr/--gb/--gl  how far the window lifts out past each side on hover
+  --wround             corner radius
+*/
+const WINDOW_VARS = ["--wt", "--wr", "--wb", "--wl", "--wround"];
+const GROW_VARS = ["--gt", "--gr", "--gb", "--gl"];
 
 // Wrap blocks of opened content in this: they develop in one after another
 export function Develop({ i = 0, as: Tag = "div", className = "", children, ...rest }) {
@@ -30,10 +32,10 @@ export function Develop({ i = 0, as: Tag = "div", className = "", children, ...r
   );
 }
 
-function Sheet({ sheet, label, title, hint, children }) {
+function Sheet({ sheet, label, title, hint, index, foot, children }) {
   const {
-    order, count, rect, world, openRect, column, stacked, radius,
-    state, peekVia, split, revealed, reduced, photo, onOpen, onClose, onPeek,
+    order, count, rect, world, openRect, column, stacked, radius, photoBox,
+    state, peekVia, split, settled, revealed, reduced, photo, photoSoft, onOpen, onClose, onPeek,
   } = sheet;
   const isOpen = state === "open";
   const peeking = state === "peek";
@@ -44,6 +46,8 @@ function Sheet({ sheet, label, title, hint, children }) {
   const closeRef = useRef(null);
   const headerRef = useRef(null);
   const plateRef = useRef(null);
+  const footRef = useRef(null);
+  const hintRef = useRef(null);
   const [photoLoaded, setPhotoLoaded] = useState(false);
 
   // Layers under an open one can't be reached
@@ -51,6 +55,38 @@ function Sheet({ sheet, label, title, hint, children }) {
   useEffect(() => {
     if (sectionRef.current) sectionRef.current.inert = unreachable;
   }, [unreachable]);
+
+  // The card's own shortcuts (download, email) belong to the collapsed card only
+  const footLive = revealed && !isOpen;
+  useEffect(() => {
+    if (footRef.current) footRef.current.inert = !footLive;
+    if (hintRef.current) hintRef.current.inert = !footLive;
+  }, [footLive]);
+
+  // Tab stays inside an open layer, wrapping from the last stop back to the close button
+  useEffect(() => {
+    if (!isOpen) return;
+    const onKeyDown = (e) => {
+      if (e.key !== "Tab" || !sectionRef.current) return;
+      const stops = [...sectionRef.current.querySelectorAll("a[href], button, [tabindex]")].filter(
+        (el) => el.tabIndex >= 0 && !el.closest("[inert], [aria-hidden='true']") && el.getClientRects().length > 0,
+      );
+      if (!stops.length) return;
+      const first = stops[0];
+      const last = stops[stops.length - 1];
+      const active = document.activeElement;
+      const inside = sectionRef.current.contains(active);
+      if (e.shiftKey && (active === first || !inside)) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && (active === last || !inside)) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [isOpen]);
 
   const prev = useRef(state);
   const from = prev.current;
@@ -88,42 +124,112 @@ function Sheet({ sheet, label, title, hint, children }) {
     if (isOpen && stacked && headerRef.current) setHeaderHeight(headerRef.current.offsetHeight);
   }, [isOpen, stacked]);
 
-  // Soft edges on a scrolling column: fade the bottom while there's more, the top once scrolled
+  /* ---------- the opened column: soft edges and the index ---------- */
+
+  // Fade the bottom while there's more, the top once scrolled; and note which of the
+  // index's sections are on screen, so the index can say where the reader is
   const [edges, setEdges] = useState({ above: false, below: false });
-  const measure = (el) => {
+  const [inView, setInView] = useState("");
+  const hasIndex = !!index;
+  const measure = useCallback((el) => {
     if (!el) return;
     const above = el.scrollTop > 4;
     const below = el.scrollTop + el.clientHeight < el.scrollHeight - 4;
     setEdges((s) => (s.above === above && s.below === below ? s : { above, below }));
-  };
+    if (!hasIndex) return;
+    const box = el.getBoundingClientRect();
+    const sections = [...el.querySelectorAll("[data-section]")];
+    // Scrolled all the way down, most of the list is on screen at once: point at where the
+    // reader landed (the last section) instead of lighting everything
+    if (above && !below && el.scrollHeight > el.clientHeight + 4) {
+      setInView(sections.at(-1)?.dataset.section ?? "");
+      return;
+    }
+    const keys = [];
+    sections.forEach((section) => {
+      const r = section.getBoundingClientRect();
+      const visible = Math.min(box.bottom, r.bottom) - Math.max(box.top, r.top);
+      if (visible >= Math.min(140, r.height * 0.6)) keys.push(section.dataset.section);
+    });
+    setInView(keys.join(" "));
+  }, [hasIndex]);
   useEffect(() => {
     if (!isOpen) {
       setEdges({ above: false, below: false });
+      setInView("");
       return;
     }
-    const t = setTimeout(() => measure(plateRef.current), reduced ? 250 : 1500);
+    const t = setTimeout(() => measure(plateRef.current), reduced ? 250 : OPEN + 250);
     return () => clearTimeout(t);
-  }, [isOpen, reduced, world.width, world.height]);
+  }, [isOpen, reduced, world.width, world.height, measure]);
+
+  // Touch screens have no hover to develop the project shots into colour: each one develops
+  // once it has scrolled into view in the opened column (index.css, .is-seen)
+  useEffect(() => {
+    const plate = plateRef.current;
+    if (!isOpen || !plate || !window.matchMedia("(hover: none)").matches) return;
+    let io;
+    const start = setTimeout(() => {
+      io = new IntersectionObserver(
+        (entries) => entries.forEach((entry) => {
+          if (!entry.isIntersecting) return;
+          entry.target.closest("[data-section]")?.classList.add("is-seen");
+          io.unobserve(entry.target);
+        }),
+        { root: plate, threshold: 0.6 },
+      );
+      plate.querySelectorAll(".project-shot").forEach((img) => io.observe(img));
+    }, reduced ? 0 : OPEN);
+    return () => {
+      clearTimeout(start);
+      io?.disconnect();
+      plate.querySelectorAll(".is-seen").forEach((el) => el.classList.remove("is-seen"));
+    };
+  }, [isOpen, reduced]);
+
+  const flashTimer = useRef(null);
+  useEffect(() => () => clearTimeout(flashTimer.current), []);
+  const jumpTo = (key) => {
+    const plate = plateRef.current;
+    const target = plate?.querySelector(`[data-section="${key}"]`);
+    if (!target) return;
+    const top = target.getBoundingClientRect().top - plate.getBoundingClientRect().top + plate.scrollTop;
+    plate.scrollTo({ top: Math.max(0, top - 2), behavior: reduced ? "auto" : "smooth" });
+    target.focus({ preventScroll: true });
+    // Mark where the jump landed, which matters most when everything already fits on screen
+    plate.querySelectorAll(".is-target").forEach((el) => el.classList.remove("is-target"));
+    target.classList.add("is-target");
+    clearTimeout(flashTimer.current);
+    flashTimer.current = setTimeout(() => target.classList.remove("is-target"), 1400);
+  };
+  const shown = new Set(inView.split(" "));
+  const indexLive = isOpen && !stacked;
 
   /* ---------- the window ---------- */
 
-  const grow = peeking ? PEEK : 0;
   const win = isOpen ? openRect : rect;
-  const round = isOpen ? 16 : radius + grow / 5;
-  const ring = peekVia === "focus" ? 2 : 1;
-  const outerClip = insetOf(win, world, grow, round);
-  const innerClip = insetOf(win, world, peeking ? grow - ring : 0, round);
+  // On a hover the cell lifts out a few px, except on sides that meet the frame's edge,
+  // where the frame would crop the lift (and its round corner)
+  const lift = peeking ? PEEK : 0;
+  const rightGap = world.width - rect.left - rect.width;
+  const bottomGap = world.height - rect.top - rect.height;
+  const geometry = {
+    "--wt": px(win.top),
+    "--wr": px(world.width - win.left - win.width),
+    "--wb": px(world.height - win.top - win.height),
+    "--wl": px(win.left),
+    "--wround": px(isOpen ? 16 : radius),
+    "--gt": px(rect.top > 1 ? lift : 0),
+    "--gr": px(rightGap > 1 ? lift : 0),
+    "--gb": px(bottomGap > 1 ? lift : 0),
+    "--gl": px(rect.left > 1 ? lift : 0),
+  };
 
   let move;
-  if (reduced) move = "0s";
-  else if (!revealed) move = MOVE;
+  if (!revealed) move = MOVE;
   else if (isOpen) move = `${OPEN}ms var(--ease-reveal)`;
-  else if (from === "open") move = `${CLOSE}ms var(--ease-reveal) 60ms`;
+  else if (from === "open") move = `${CLOSE}ms var(--ease-reveal) 40ms`;
   else move = "420ms var(--ease-out)";
-  const clipTransition = reduced ? "none" : `clip-path ${move}`;
-
-  // The title block rides the window's top-left corner as it grows, so it lands top-left
-  const cornerShift = isOpen ? `translate3d(${openRect.left - rect.left}px, ${openRect.top - rect.top}px, 0)` : "none";
 
   /* ---------- the layer as a whole ---------- */
 
@@ -134,22 +240,80 @@ function Sheet({ sheet, label, title, hint, children }) {
   const groupTransform = state === "dim" && !stacked ? "scale(0.985)" : "none";
   let groupTransition;
   if (reduced) groupTransition = "opacity 200ms ease";
-  else if (state === "dim") groupTransition = "opacity 650ms ease, transform 900ms var(--ease-reveal)";
-  else if (from === "dim") groupTransition = "opacity 500ms ease 300ms, transform 800ms var(--ease-out) 150ms";
+  // Intro: the layers replace the whole photo in one frame (they're identical to it)
+  else if (!revealed) groupTransition = "opacity 0s";
+  else if (state === "dim") groupTransition = "opacity 500ms ease, transform 700ms var(--ease-reveal)";
+  else if (from === "dim") groupTransition = "opacity 400ms ease 200ms, transform 600ms var(--ease-out) 100ms";
   else groupTransition = "opacity 350ms ease";
 
-  /* ---------- shadows ---------- */
+  const transition = reduced
+    ? groupTransition
+    : [
+        ...WINDOW_VARS.map((v) => `${v} ${move}`),
+        ...GROW_VARS.map((v) => `${v} 420ms var(--ease-out)`),
+        groupTransition,
+      ].join(", ");
 
-  const shadowBox = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
-  const toWindow = (w, g) =>
-    `translate(${w.left - rect.left - g}px, ${w.top - rect.top - g}px) scale(${(w.width + 2 * g) / rect.width}, ${(w.height + 2 * g) / rect.height})`;
-  const shadowTransform = isOpen ? toWindow(openRect, 0) : peeking ? toWindow(rect, grow) : "none";
-  const shadowTransition = reduced ? "none" : `transform ${move}, opacity 350ms ease`;
+  // The card's scrim rides the window; it clears before the reading light takes over, and
+  // returns once the window is nearly home
+  let scrimTransition;
+  if (reduced) scrimTransition = "opacity 200ms ease";
+  else if (!revealed) scrimTransition = `opacity ${MOVE}`;
+  else if (isOpen) scrimTransition = "opacity 320ms ease";
+  else if (from === "open") scrimTransition = `opacity 360ms ease ${CLOSE * 0.45}ms`;
+  else scrimTransition = "opacity 350ms ease";
+
+  const cellBox = { left: rect.left, top: rect.top, width: rect.width, height: rect.height };
+  // The title block rides the window's top-left corner, so it lands top-left when opened
+  const cornerShift = `translate3d(calc(var(--wl) - ${px(rect.left)}), calc(var(--wt) - ${px(rect.top)}), 0)`;
 
   /* ---------- light ---------- */
 
   const filter = peeking ? "brightness(1.12)" : "none";
-  const filterTransition = reduced ? "none" : "filter 420ms var(--ease-out)";
+  const filterTransition = reduced ? "filter 0s" : "filter 420ms var(--ease-out)";
+  // Phones, where the text runs over the photo: an opened layer cross-fades to a soft,
+  // pre-blurred copy, so the bird is only atmosphere behind the words (no live blur filter)
+  const soft = isOpen && stacked;
+  const softTransition = reduced ? "opacity 200ms ease" : soft ? `opacity ${OPEN}ms ease 150ms` : `opacity ${CLOSE}ms ease`;
+
+  // Hovering one of the card's own links shouldn't also light up the card as a whole (two
+  // "click me" signals for two different actions). The link list and each foot link count as
+  // one zone, gaps included; the card is still the one being pointed at ("link"), so its
+  // neighbours stay shaded. Switching between card and zone settles after a beat, so a pointer
+  // skimming the edge of the zone doesn't make the card flicker.
+  const hoverTimer = useRef(null);
+  const pending = useRef(null);
+  const cancelPending = () => {
+    clearTimeout(hoverTimer.current);
+    pending.current = null;
+  };
+  useEffect(() => () => clearTimeout(hoverTimer.current), []);
+  const onPointerOver = (e) => {
+    if (e.pointerType !== "mouse" || !revealed) return;
+    const want = e.target.closest?.(".link-zone, .card-foot a") ? "link" : "hover";
+    const current = peekVia === "hover" || peekVia === "link" ? peekVia : null;
+    if (want === current) {
+      cancelPending();
+      return;
+    }
+    if (want === pending.current) return; // already on its way
+    cancelPending();
+    // Arriving on the card from outside answers at once; changing zones within it waits
+    if (!current) {
+      onPeek(want);
+      return;
+    }
+    pending.current = want;
+    hoverTimer.current = setTimeout(() => {
+      pending.current = null;
+      onPeek(want);
+    }, 120);
+  };
+  const onPointerLeave = (e) => {
+    if (e.pointerType !== "mouse") return;
+    cancelPending();
+    onPeek(null);
+  };
 
   const onFocus = (e) => {
     if (!restoringFocus.current && e.target.matches(":focus-visible")) onPeek("focus");
@@ -171,25 +335,23 @@ function Sheet({ sheet, label, title, hint, children }) {
   return (
     <section
       ref={sectionRef}
-      className={`sheet group ${isOpen ? "is-open" : ""} ${peeking ? "is-peek" : ""} ${closing ? "is-closing" : ""}`}
+      className={`sheet group ${foot ? "has-foot" : ""} ${isOpen ? "is-open" : ""} ${peeking ? "is-peek" : ""} ${closing ? "is-closing" : ""}`}
       data-state={state}
       role={isOpen ? "dialog" : undefined}
       aria-modal={isOpen || undefined}
       aria-label={label}
-      style={{ zIndex, opacity: groupOpacity, transform: groupTransform, transition: groupTransition }}
+      style={{ ...geometry, zIndex, opacity: groupOpacity, transform: groupTransform, transition }}
     >
-      {/* Same card shadow as the original grid; on hover a deeper one lifts the layer off its neighbours */}
-      <div className="sheet-shadow" aria-hidden="true" style={{ ...shadowBox, opacity: split ? 1 : 0, transform: shadowTransform, transition: shadowTransition }} />
-      <div className="sheet-shadow is-lift" aria-hidden="true" style={{ ...shadowBox, opacity: peeking || isOpen ? 1 : 0, transform: shadowTransform, transition: shadowTransition }} />
+      {/* Card shadow, and a deeper one for a lifted or opened layer. Both are the window's own box */}
+      <div className="sheet-shadow win" aria-hidden="true" style={{ opacity: settled ? 1 : 0 }} />
+      <div className="sheet-shadow is-lift win" aria-hidden="true" style={{ opacity: peeking || isOpen ? 1 : 0 }} />
 
       <div
         className={`sheet-layer ${peekVia === "focus" ? "is-focus" : ""}`}
-        style={{ clipPath: outerClip, transition: clipTransition }}
-        onPointerEnter={(e) => e.pointerType === "mouse" && revealed && onPeek("hover")}
-        onPointerLeave={(e) => e.pointerType === "mouse" && onPeek(null)}
+        onPointerOver={onPointerOver}
+        onPointerLeave={onPointerLeave}
       >
-        <div className="sheet-ring" aria-hidden="true" />
-        <div className="sheet-inner" style={{ clipPath: innerClip, transition: clipTransition }}>
+        <div className="sheet-inner">
           {/* The whole photo, registered to the frame: every layer holds the same image */}
           <img
             src={photo}
@@ -197,36 +359,72 @@ function Sheet({ sheet, label, title, hint, children }) {
             aria-hidden="true"
             draggable={false}
             onLoad={() => setPhotoLoaded(true)}
-            className={`photo transition-opacity duration-700 ${photoLoaded ? "opacity-100" : "opacity-0"}`}
-            style={{ filter, transition: `opacity 700ms ease, ${filterTransition === "none" ? "filter 0s" : filterTransition}` }}
+            className="photo"
+            style={{
+              ...photoBox,
+              filter,
+              opacity: photoLoaded ? 1 : 0,
+              transition: `opacity 700ms ease, ${filterTransition}`,
+            }}
           />
+          {stacked && (
+            <img
+              src={photoSoft}
+              alt=""
+              aria-hidden="true"
+              draggable={false}
+              className="photo"
+              style={{ ...photoBox, opacity: soft ? 1 : 0, transition: softTransition }}
+            />
+          )}
           {/* Flashlight: off on an open layer, where the reading light takes over */}
           <div className="spotlight" style={{ opacity: revealed && !isOpen ? 1 : 0 }} />
           <div className="spotlight-glow" style={{ opacity: revealed && !isOpen ? 1 : 0 }} />
+
+          {/* Collapsed scrim rides the window; the reading scrim covers the opened layer */}
+          <div aria-hidden="true" className="card-scrim win" style={{ opacity: settled && !isOpen ? 1 : 0, transition: scrimTransition }} />
+          <div aria-hidden="true" className="open-scrim" />
+
           <p
-            className="absolute select-none text-[10px] italic text-white/50"
+            className="photo-credit"
             style={{
-              bottom: "calc(var(--credit-inset) + 6px)",
-              right: "calc(var(--credit-inset) + 24px)",
-              // On phones an open layer's text scrolls over this spot
-              opacity: stacked && isOpen ? 0 : 1,
-              transition: "opacity 0.3s ease",
+              // An open layer's text column runs over this spot
+              opacity: isOpen ? 0 : 1,
+              transition: isOpen ? "opacity 0.2s ease" : "opacity 0.4s ease 0.3s",
             }}
           >
             © Emilia Sipola. All rights reserved.
           </p>
 
-          {/* Collapsed scrim sits on the cell; the reading scrim covers the opened layer */}
-          <div aria-hidden="true" className="absolute" style={{ ...shadowBox, background: SCRIM, opacity: split && !isOpen ? 1 : 0, transition: `opacity ${MOVE}` }} />
-          <div aria-hidden="true" className="open-scrim" />
+          {/* The card's button comes first, so the card's own links tab after it */}
+          {!isOpen && (
+            <button
+              ref={openRef}
+              type="button"
+              className="sheet-open"
+              onClick={onOpen}
+              onFocus={onFocus}
+              onBlur={() => onPeek(null)}
+              aria-label={`Open ${label}`}
+              aria-haspopup="dialog"
+              style={{ ...cellBox, borderRadius: 16, zIndex: count + 20 }}
+            />
+          )}
+
+          {/* Open: the close control is the dialog's first stop, ahead of the index and the text */}
+          {isOpen && (
+            <div className="sheet-close" style={closeStyle}>
+              {!stacked && <kbd aria-hidden="true">Esc</kbd>}
+              <button ref={closeRef} type="button" onClick={onClose} aria-label={`Close ${label}`}>
+                <FiX aria-hidden="true" />
+              </button>
+            </div>
+          )}
 
           {/* The card: title and hint, exactly as the grid shows them. It rides the window's corner when opened */}
-          <div
-            className="card-box"
-            style={{ ...shadowBox, transform: cornerShift, transition: reduced ? "none" : `transform ${move}` }}
-          >
+          <div className="card-box" style={{ ...cellBox, transform: cornerShift }}>
             <div
-              className="pointer-events-none absolute inset-0 z-20 flex flex-col p-5 xl:p-6"
+              className="card-text pointer-events-none absolute inset-0 flex flex-col"
               style={{
                 opacity: revealed ? 1 : 0,
                 transform: revealed ? "none" : "translateY(8px)",
@@ -235,17 +433,29 @@ function Sheet({ sheet, label, title, hint, children }) {
             >
               <header ref={headerRef} className="flex items-start justify-between gap-3">
                 <div id={titleId} className="min-w-0">{title}</div>
-                <FiArrowUpRight
-                  aria-hidden="true"
-                  className={`card-arrow shrink-0 text-xl text-accent transition-all duration-200 ${peeking ? "translate-x-0.5 -translate-y-0.5 opacity-100" : "opacity-0"}`}
-                />
+                <FiArrowUpRight aria-hidden="true" className="card-arrow" />
               </header>
 
-              {hint && (
-                <div className="card-hint relative mt-3 min-h-0 flex-1">
-                  <div className="absolute inset-0">{hint}</div>
-                </div>
-              )}
+              {index ? (
+                <nav className="card-hint is-index" aria-label={`${label} index`} aria-hidden={!indexLive || undefined}>
+                  <ul className="type-hint space-y-1.5">
+                    {index.map(({ key, label: text, strong }) => (
+                      <li key={key}>
+                        <button
+                          type="button"
+                          tabIndex={indexLive ? 0 : -1}
+                          onClick={() => jumpTo(key)}
+                          className={`index-link ${strong ? "is-strong" : ""} ${shown.has(key) ? "is-current" : ""}`}
+                        >
+                          {text}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                </nav>
+              ) : hint ? (
+                <div ref={hintRef} className="card-hint">{hint}</div>
+              ) : null}
             </div>
           </div>
 
@@ -261,28 +471,28 @@ function Sheet({ sheet, label, title, hint, children }) {
           </div>
           {!stacked && <div className="plate-spine" aria-hidden="true" style={{ left: column.left - 0.5 }} />}
 
-          {!isOpen && (
-            <button
-              ref={openRef}
-              type="button"
-              className="sheet-open"
-              onClick={onOpen}
-              onFocus={onFocus}
-              onBlur={() => onPeek(null)}
-              aria-label={`Open ${label}`}
-              aria-haspopup="dialog"
-              style={{ ...shadowBox, borderRadius: 16, zIndex: count + 20 }}
-            />
-          )}
-
-          {isOpen && (
-            <div className="sheet-close" style={closeStyle}>
-              {!stacked && <kbd aria-hidden="true">Esc</kbd>}
-              <button ref={closeRef} type="button" onClick={onClose} aria-label={`Close ${label}`}>
-                <FiX aria-hidden="true" />
-              </button>
+          {/* Bottom of the card: a shortcut or a glance */}
+          {foot && (
+            <div
+              ref={footRef}
+              className="card-foot"
+              style={{
+                ...cellBox,
+                zIndex: count + 22,
+                opacity: footLive ? 1 : 0,
+                transition: reduced
+                  ? "opacity 200ms ease"
+                  : footLive
+                    ? `opacity 0.6s ease ${from === "open" ? CLOSE : 200 + order * 110}ms`
+                    : "opacity 0.2s ease",
+              }}
+            >
+              {foot}
             </div>
           )}
+
+          {/* Edge light of a lifted layer, drawn just inside the window so the frame never crops it */}
+          <div className="sheet-ring win" aria-hidden="true" />
         </div>
       </div>
     </section>

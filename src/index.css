@@ -20,12 +20,27 @@
 @layer components {
   /* Type scale. cqw = % of the bento grid's width, so headings grow with the grid */
   .type-display {
-    @apply font-display leading-none tracking-tight text-white;
-    font-size: clamp(2.25rem, 4.2cqw, 3.75rem);
+    @apply font-display font-medium leading-none text-white;
+    font-size: clamp(2.25rem, 4.4cqw, 4rem);
+    letter-spacing: -0.045em;
   }
   .type-title {
-    @apply font-display leading-tight text-white;
-    font-size: clamp(1.5rem, 2.1cqw, 2rem);
+    @apply font-display font-medium leading-tight text-white;
+    font-size: clamp(1.25rem, 1.6cqw, 1.625rem);
+    letter-spacing: -0.025em;
+  }
+  /* The quiet lines under a card's title; they grow a little with the grid on big screens */
+  .type-hint {
+    font-size: clamp(0.875rem, 1.05cqw, 1rem);
+    line-height: 1.45;
+    color: rgb(255 255 255 / 0.8);
+  }
+  /* Phones and tablets: the name scales with the column, so a wide tablet card isn't half empty */
+  .world[data-mode="stacked"] .type-display {
+    font-size: clamp(2.25rem, 6.4cqw, 3.75rem);
+  }
+  .world[data-mode="stacked"] .type-hint {
+    color: rgb(255 255 255 / 0.86);
   }
   .type-label {
     @apply text-[11px] font-medium uppercase tracking-[0.18em] text-white/60;
@@ -53,18 +68,20 @@
 @property --spot-x { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --spot-y { syntax: "<length>"; inherits: true; initial-value: 0px; }
 @property --spot-r { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --spot-dim { syntax: "<number>"; inherits: true; initial-value: 0; }
 
 .spotlight-world {
-  transition: --spot-r 0.6s ease, --spot-x 0.12s linear, --spot-y 0.12s linear;
+  transition: --spot-r 0.6s ease, --spot-dim 0.6s ease, --spot-x 0.12s linear, --spot-y 0.12s linear;
 }
 
-/* Dims the photo everywhere except a soft circle around the cursor (world coordinates) */
+/* Dims the photo everywhere except a soft circle around the cursor (world coordinates).
+   Only while the pointer is over the board: at rest the photo shows at full strength */
 .spotlight {
   display: none;
   position: absolute;
   inset: 0;
   pointer-events: none;
-  background: rgb(0 0 0 / 0.45);
+  background: rgb(0 0 0 / var(--spot-dim));
   transition: opacity 1.2s ease;
   -webkit-mask-image: radial-gradient(circle at var(--spot-x) var(--spot-y), transparent calc(var(--spot-r) * 0.25), black var(--spot-r));
   mask-image: radial-gradient(circle at var(--spot-x) var(--spot-y), transparent calc(var(--spot-r) * 0.25), black var(--spot-r));
@@ -103,6 +120,18 @@
   }
 }
 
+/* The window's geometry (see Sheet.jsx). Registered so they can transition, and so every
+   part of a layer is driven by the very same interpolated values in every frame */
+@property --wt { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --wr { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --wb { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --wl { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --gt { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --gr { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --gb { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --gl { syntax: "<length>"; inherits: true; initial-value: 0px; }
+@property --wround { syntax: "<length>"; inherits: true; initial-value: 0px; }
+
 /* A full-size layer; only its window (clip-path) shows */
 .sheet {
   position: absolute;
@@ -111,31 +140,35 @@
   will-change: transform, opacity;
 }
 
+/* Anything that is the window's own box: shadow, scrim, edge ring */
+.win {
+  position: absolute;
+  top: calc(var(--wt) - var(--gt));
+  right: calc(var(--wr) - var(--gr));
+  bottom: calc(var(--wb) - var(--gb));
+  left: calc(var(--wl) - var(--gl));
+  border-radius: var(--wround);
+  pointer-events: none;
+}
+
 .photo {
   position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+  max-width: none;
   user-select: none;
   pointer-events: none;
 }
 
-/* The grid's card shadow (shadow-xl shadow-black/40), and a deeper one for a lifted layer */
+/* Card shadow, soft enough that the gutters under a card read the same as those beside it;
+   and a deeper one for a lifted or opened layer */
 .sheet-shadow {
-  position: absolute;
-  border-radius: 16px;
-  transform-origin: 0 0;
-  pointer-events: none;
-  box-shadow:
-    0 20px 25px -5px rgb(0 0 0 / 0.4),
-    0 8px 10px -6px rgb(0 0 0 / 0.4);
+  box-shadow: 0 10px 30px -10px rgb(0 0 0 / 0.5);
+  transition: opacity 350ms ease;
 }
 .sheet-shadow.is-lift {
   box-shadow:
     0 0 0 1px rgb(0 0 0 / 0.35),
-    0 26px 50px -10px rgb(0 0 0 / 0.75),
-    0 0 34px rgb(0 0 0 / 0.45);
+    0 22px 44px -12px rgb(0 0 0 / 0.75),
+    0 0 30px rgb(0 0 0 / 0.4);
 }
 
 /* The window */
@@ -143,19 +176,21 @@
   position: absolute;
   inset: 0;
   pointer-events: auto;
+  clip-path: inset(
+    calc(var(--wt) - var(--gt)) calc(var(--wr) - var(--gr)) calc(var(--wb) - var(--gb)) calc(var(--wl) - var(--gl))
+    round var(--wround)
+  );
 }
 
-/* Edge light of a lifted layer: shows only in the sliver between the outer and inner windows.
-   Invisible at rest, so the cells' anti-aliased edges match the original grid exactly. */
+/* Edge light of a lifted layer, drawn inside the window's edge. Invisible at rest */
 .sheet-ring {
-  position: absolute;
-  inset: 0;
-  background: rgb(255 255 255 / 0.42);
+  z-index: 60;
+  box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.42);
   opacity: 0;
   transition: opacity 0.3s ease;
 }
 .sheet-layer.is-focus .sheet-ring {
-  background: theme("colors.accent");
+  box-shadow: inset 0 0 0 2px theme("colors.accent");
 }
 .sheet.is-peek .sheet-ring {
   opacity: 1;
@@ -168,9 +203,293 @@
   background: theme("colors.neutral.900");
 }
 
+/* Darkens the top of a collapsed card, where its title and hint sit */
+.card-scrim {
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.6) 0%, rgb(0 0 0 / 0.25) 45%, rgb(0 0 0 / 0) 80%);
+}
+/* Cards with something at the bottom get a little shade there too */
+.sheet.has-foot .card-scrim {
+  background:
+    linear-gradient(to top, rgb(0 0 0 / 0.42) 0, rgb(0 0 0 / 0) 150px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.6) 0%, rgb(0 0 0 / 0.25) 45%, rgb(0 0 0 / 0) 80%);
+}
+/* Phones have no flashlight dim and the photo runs brighter there, so the text gets more shade */
+.world[data-mode="stacked"] .card-scrim {
+  background: linear-gradient(to bottom, rgb(0 0 0 / 0.66) 0%, rgb(0 0 0 / 0.42) 55%, rgb(0 0 0 / 0.2) 100%);
+}
+.world[data-mode="stacked"] .sheet.has-foot .card-scrim {
+  background:
+    linear-gradient(to top, rgb(0 0 0 / 0.3) 0, rgb(0 0 0 / 0) 70px),
+    linear-gradient(to bottom, rgb(0 0 0 / 0.66) 0%, rgb(0 0 0 / 0.42) 55%, rgb(0 0 0 / 0.2) 100%);
+}
+
 .card-box {
   position: absolute;
+  z-index: 26;
   pointer-events: none;
+}
+.card-text,
+.card-foot {
+  padding: var(--pad);
+}
+
+.card-hint {
+  position: relative;
+  margin-top: 0.75rem;
+  min-height: 0;
+  transition: opacity 0.3s ease;
+}
+
+/* "Opens": quiet at rest so every card reads as clickable, lit on hover or focus */
+.card-arrow {
+  flex-shrink: 0;
+  font-size: 1.25rem;
+  color: #fff;
+  opacity: 0.45;
+  transition: opacity 0.25s ease, color 0.25s ease, transform 0.35s var(--ease-out);
+}
+.sheet.is-peek .card-arrow {
+  color: theme("colors.accent");
+  opacity: 1;
+  transform: translate(2px, -2px);
+}
+@media (hover: none) {
+  .card-arrow {
+    opacity: 0.65;
+  }
+}
+
+/* Bottom of a collapsed card */
+.card-foot {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+.card-foot a {
+  pointer-events: auto;
+}
+.card-foot .link-quiet {
+  color: rgb(255 255 255 / 0.85);
+}
+/* Foot links: a finger-sized hit area (padding, cancelled by margin so nothing moves), with
+   the focus ring still drawn snug around the text */
+.card-foot a {
+  padding: 12px 10px;
+  margin: -12px -10px;
+}
+.card-foot a:focus-visible {
+  box-shadow: none;
+  outline: 2px solid theme("colors.accent");
+  outline-offset: -9px;
+  border-radius: 12px;
+}
+.card-foot .link-quiet:hover,
+.card-foot .link-quiet:focus-visible {
+  color: theme("colors.accent");
+}
+
+/* The index under an open card's title: jump links, lit where the reader is */
+.index-link {
+  display: inline-block;
+  margin: 0 -5px;
+  padding: 0 5px;
+  border-radius: 4px;
+  text-align: left;
+  color: inherit;
+  outline: none;
+  transition: color 0.3s ease;
+}
+.index-link.is-strong {
+  color: #fff;
+}
+.world[data-mode="grid"] .sheet.is-open .index-link {
+  pointer-events: auto;
+  cursor: pointer;
+  color: rgb(255 255 255 / 0.5);
+}
+.world[data-mode="grid"] .sheet.is-open .index-link.is-current {
+  color: #fff;
+}
+/* A hairline beside the index spans the sections on screen, and follows the reading */
+.index-link {
+  position: relative;
+}
+.index-link::before {
+  content: "";
+  position: absolute;
+  left: -9px;
+  top: -3px;
+  bottom: -3px;
+  width: 1px;
+  background: rgb(255 255 255 / 0.7);
+  opacity: 0;
+  transform: scaleY(0.4);
+  transition: opacity 0.35s ease, transform 0.45s var(--ease-out);
+}
+.world[data-mode="grid"] .sheet.is-open .index-link.is-current::before {
+  opacity: 1;
+  transform: none;
+}
+.world[data-mode="grid"] .sheet.is-open .index-link:hover,
+.world[data-mode="grid"] .sheet.is-open .index-link:focus-visible {
+  color: theme("colors.accent");
+}
+.index-link:focus-visible {
+  box-shadow: 0 0 0 2px theme("colors.accent");
+}
+/* Where a jump landed */
+[data-section] {
+  outline: none;
+}
+[data-section] .type-label,
+[data-section] .project-name {
+  transition: color 0.5s ease;
+}
+[data-section].is-target .type-label,
+[data-section].is-target .project-name {
+  color: theme("colors.accent");
+  transition-duration: 0.15s;
+}
+
+/* Contact's hint: where to find her. A list on the grid, a row of icons on phones */
+.contact-hint {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.contact-hint > li {
+  display: flex;
+}
+/* The list as a whole is the links' zone: the gaps between them belong to the links, not
+   to the card behind (so the pointer isn't handed back and forth) */
+.card-hint .link-zone {
+  pointer-events: auto;
+}
+/* Real links, straight from the collapsed card (the rest of the card opens it) */
+.contact-hint a {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.65rem;
+  margin: 0 -5px;
+  padding: 1px 5px;
+  border-radius: 4px;
+  pointer-events: auto;
+  outline: none;
+  transition: color 0.25s ease;
+}
+.contact-hint a:hover,
+.contact-hint a:focus-visible {
+  color: theme("colors.accent");
+}
+.contact-hint a:focus-visible {
+  box-shadow: 0 0 0 2px theme("colors.accent");
+}
+.contact-hint .hint-arrow {
+  font-size: 0.85em;
+  opacity: 0;
+  transform: translate(-3px, 3px);
+  transition: opacity 0.25s ease, transform 0.35s var(--ease-out);
+}
+.contact-hint a:hover .hint-arrow,
+.contact-hint a:focus-visible .hint-arrow {
+  opacity: 1;
+  transform: none;
+}
+.contact-hint svg {
+  flex-shrink: 0;
+  font-size: 1.05em;
+  opacity: 0.85;
+}
+.world[data-mode="stacked"] .contact-hint {
+  flex-direction: row;
+  gap: 1.1rem;
+  font-size: 20px;
+}
+.world[data-mode="stacked"] .contact-hint .hint-arrow {
+  display: none;
+}
+/* Phones: each icon link is a 44px target, with clear space between them */
+.world[data-mode="stacked"] .contact-hint {
+  gap: 8px;
+  margin-left: -12px;
+}
+.world[data-mode="stacked"] .contact-hint a {
+  margin: -12px 0;
+  padding: 12px;
+}
+.world[data-mode="stacked"] .contact-hint a:focus-visible {
+  box-shadow: none;
+  outline: 2px solid theme("colors.accent");
+  outline-offset: -9px;
+  border-radius: 12px;
+}
+.world[data-mode="stacked"] .contact-hint-label {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+.card-email {
+  align-self: flex-start;
+  border-radius: 4px;
+  font-family: theme("fontFamily.display");
+  font-size: clamp(17px, 1.6cqw, 22px);
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  color: rgb(255 255 255 / 0.88);
+  overflow-wrap: anywhere;
+  outline: none;
+  transition: color 0.25s ease;
+}
+.card-email:hover,
+.card-email:focus-visible {
+  color: theme("colors.accent");
+}
+.card-email:focus-visible {
+  box-shadow: 0 0 0 2px theme("colors.accent");
+}
+
+.overview-foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 0.25rem 0.9rem;
+}
+.overview-foot .type-hint {
+  color: rgb(255 255 255 / 0.86);
+}
+
+.tech-glance {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1.15rem;
+  font-size: 20px;
+  color: rgb(255 255 255 / 0.62);
+}
+.tech-glance > li {
+  display: grid;
+  width: 20px;
+  height: 20px;
+  place-items: center;
+}
+/* On phones and tablets the photo credit shares this corner */
+.world[data-mode="stacked"] .tech-glance {
+  margin-bottom: 12px;
+}
+
+.photo-credit {
+  position: absolute;
+  bottom: calc(var(--credit-inset) + 7px);
+  right: calc(var(--credit-inset) + 24px);
+  user-select: none;
+  font-size: 10px;
+  letter-spacing: 0.06em;
+  color: rgb(255 255 255 / 0.66);
 }
 
 .sheet-open {
@@ -194,10 +513,13 @@
   cursor: default;
 }
 
-/* On phones the hint steps aside when opened, so the text can start right under the title */
-.card-hint {
-  transition: opacity 0.35s ease;
+/* On phones, a closing card's hint waits for the opened text to clear out from under it */
+.world[data-mode="stacked"] .sheet:not(.is-open) .card-hint {
+  transition-delay: 0.2s;
 }
+/* An open card keeps its hint only if the hint is a working index. On phones it steps
+   aside altogether, so the text can start right under the title */
+.sheet.is-open .card-hint:not(.is-index),
 .world[data-mode="stacked"] .sheet.is-open .card-hint {
   opacity: 0;
 }
@@ -221,7 +543,7 @@
 }
 .sheet.is-open .open-scrim {
   opacity: 1;
-  transition-duration: 1s;
+  transition-duration: 0.7s;
 }
 
 /* The grid's centre line, drawn back in as the page divides into photo and text */
@@ -238,7 +560,7 @@
 }
 .sheet.is-open .plate-spine {
   transform: scaleY(1);
-  transition: transform 1.2s var(--ease-reveal) 300ms;
+  transition: transform 0.9s var(--ease-reveal) 200ms;
 }
 
 .sheet-close {
@@ -248,17 +570,18 @@
   align-items: center;
   gap: 12px;
   opacity: 0;
-  animation: fade-in 0.5s ease 0.45s forwards;
+  /* arrives with the opened text, once the window has (nearly) landed */
+  animation: fade-in 0.4s ease 0.44s forwards;
 }
 .sheet-close kbd {
-  border: 1px solid rgb(255 255 255 / 0.2);
+  border: 1px solid rgb(255 255 255 / 0.25);
   border-radius: 5px;
-  padding: 2px 6px;
+  padding: 2px 7px;
   font-family: inherit;
-  font-size: 10px;
+  font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgb(255 255 255 / 0.5);
+  color: rgb(255 255 255 / 0.62);
 }
 .sheet-close button {
   @apply grid h-10 w-10 shrink-0 place-items-center rounded-full border border-white/30 bg-black/30 text-xl text-white transition-colors
@@ -311,18 +634,46 @@
   mask-image: linear-gradient(to bottom, transparent, black 40px, black calc(100% - 56px), transparent);
 }
 
-/* Blocks develop in one after another once the window has mostly opened */
+/* The opened text develops like a print coming up in the tray: the column comes into focus
+   as one (a single blurred wrapper, cheap to repaint) while its blocks surface one after
+   another. It waits until the window is ~90% open (440ms into its 700ms), so nothing shows
+   under a window edge that's still moving or under the title flying past. Fully legible ≈1s */
+.plate-inner {
+  --develop-at: 440ms;
+  filter: blur(4px);
+  transition: filter 0.16s ease;
+}
+.sheet.is-open .plate-inner {
+  filter: blur(0);
+  /* an even curve, so the soft focus is still there while the blocks fade up */
+  transition: filter 0.5s cubic-bezier(0.4, 0, 0.2, 1) var(--develop-at);
+}
 .develop {
   opacity: 0;
-  transform: translate3d(0, 14px, 0);
-  transition: opacity 0.18s ease, transform 0.18s ease;
+  transform: translate3d(0, 10px, 0);
+  transition: opacity 0.16s ease, transform 0.16s ease;
 }
 .sheet.is-open .develop {
   opacity: 1;
   transform: none;
   transition:
-    opacity 0.8s var(--ease-out) calc(420ms + var(--i) * 80ms),
-    transform 1s var(--ease-out) calc(420ms + var(--i) * 80ms);
+    opacity 0.4s ease calc(var(--develop-at) + var(--i) * 40ms),
+    transform 0.45s var(--ease-out) calc(var(--develop-at) + var(--i) * 40ms);
+}
+
+/* On phones the text shares the column with the title flying up to meet it: a touch later */
+.world[data-mode="stacked"] .plate-inner {
+  --develop-at: 480ms;
+}
+/* Tablets: a comfortable measure for the single reading column */
+@media (min-width: 600px) {
+  .world[data-mode="stacked"] .plate-inner {
+    max-width: 38rem;
+    margin-inline: auto;
+  }
+  .world[data-mode="stacked"] .plate-body {
+    font-size: 15px;
+  }
 }
 
 .plate-block + .plate-block {
@@ -334,6 +685,11 @@
   font-size: 16.5px;
   line-height: 1.6;
   color: rgb(255 255 255 / 0.86);
+}
+.plate-lede,
+.plate-body,
+.cv-notes {
+  text-wrap: pretty;
 }
 .plate-body {
   font-size: 14px;
@@ -379,14 +735,31 @@
   filter: grayscale(1) brightness(0.82) contrast(1.05);
   transition: filter 0.7s ease;
 }
-.project:hover .project-shot,
-.project:focus-within .project-shot {
+/* One rule per kind of pointer. Mouse: develops on hover. Touch, where :hover sticks to
+   wherever the finger last landed: each shot develops once it has scrolled into view
+   (.is-seen, set in Sheet.jsx). Keyboard: on focus, everywhere */
+@media (hover: hover) {
+  .project:hover .project-shot,
+  .project-feature:hover .project-shot {
+    filter: none;
+  }
+}
+@media (hover: none) {
+  .is-seen .project-shot {
+    filter: none;
+    transition-duration: 1.1s;
+  }
+}
+.project:focus-within .project-shot,
+.project-feature:focus-within .project-shot {
   filter: none;
 }
 .project-name {
   font-family: theme("fontFamily.display");
-  font-size: 24px;
-  line-height: 1.05;
+  font-size: 19px;
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
   color: #fff;
 }
 
@@ -400,12 +773,8 @@
   aspect-ratio: 21 / 9;
   object-position: center;
 }
-.project-feature:hover .project-shot,
-.project-feature:focus-within .project-shot {
-  filter: none;
-}
 .project-feature .project-name {
-  font-size: 32px;
+  font-size: 26px;
 }
 
 .cv-download {
@@ -476,8 +845,10 @@
 }
 .contact-value {
   font-family: theme("fontFamily.display");
-  font-size: clamp(24px, 2.4cqw, 36px);
-  line-height: 1.1;
+  font-size: clamp(20px, 2cqw, 30px);
+  font-weight: 500;
+  line-height: 1.15;
+  letter-spacing: -0.025em;
   color: #fff;
   overflow-wrap: anywhere;
   transition: color 0.25s ease;
@@ -512,17 +883,17 @@
   grid-column: 1 / -1;
 }
 .world[data-mode="stacked"] .contact-value {
-  font-size: 26px;
+  font-size: 22px;
 }
 .world[data-mode="stacked"] .project {
   grid-template-columns: 5.5rem minmax(0, 1fr);
   gap: 0.9rem;
 }
 .world[data-mode="stacked"] .project-name {
-  font-size: 22px;
+  font-size: 18px;
 }
 .world[data-mode="stacked"] .project-feature .project-name {
-  font-size: 27px;
+  font-size: 23px;
 }
 .world[data-mode="stacked"] .plate-inner {
   padding-right: 0;
@@ -536,8 +907,8 @@
   .world[data-mode="grid"] .rule-list > li { padding: 5px 0; font-size: 14.5px; }
   .world[data-mode="grid"] .project { grid-template-columns: 6rem minmax(0, 1fr); gap: 0.95rem; padding: 0.75rem 0; }
   .world[data-mode="grid"] .project:first-child { padding-top: 0; }
-  .world[data-mode="grid"] .project-name { font-size: 21px; }
-  .world[data-mode="grid"] .project-feature .project-name { font-size: 28px; }
+  .world[data-mode="grid"] .project-name { font-size: 18px; }
+  .world[data-mode="grid"] .project-feature .project-name { font-size: 23px; }
   .world[data-mode="grid"] .cv-item { padding: 6px 0; }
   .world[data-mode="grid"] .cv-download { margin-bottom: 1.2rem; }
   .world[data-mode="grid"] .cv-section { margin-bottom: 1.1rem; }
@@ -549,11 +920,7 @@
 /* Housekeeping                                                        */
 /* ------------------------------------------------------------------ */
 
-.world.is-resizing .sheet,
-.world.is-resizing .sheet-layer,
-.world.is-resizing .sheet-inner,
-.world.is-resizing .sheet-shadow,
-.world.is-resizing .card-box {
+.world.is-resizing .sheet {
   transition: none !important;
 }
 
@@ -568,6 +935,10 @@
 .world.is-reduced .plate-spine {
   transform: none !important;
 }
+.world.is-reduced .plate-inner {
+  filter: none !important;
+  transition: none !important;
+}
 .world.is-reduced .plate-spine {
   opacity: 0;
   transition: opacity 0.2s ease !important;
@@ -578,4 +949,19 @@
 .world.is-reduced .sheet-close {
   animation-duration: 0.2s;
   animation-delay: 0s;
+}
+.world.is-reduced .index-link::before {
+  transform: none !important;
+}
+
+/* Landscape phones: the featured shot mustn't fill the whole short screen */
+@media (max-height: 499px) {
+  .project-feature .project-shot {
+    max-height: 42vh;
+  }
+}
+
+/* Phones: buttons in the opened text are finger-sized too */
+.world[data-mode="stacked"] .btn {
+  min-height: 44px;
 }

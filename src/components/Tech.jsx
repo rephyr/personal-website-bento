@@ -54,13 +54,21 @@ function TechIcon({ tech: { icon: Icon, img } }) {
     : <Icon aria-hidden="true" className="flex-shrink-0" />;
 }
 
+// A glance at the stack along the bottom of the collapsed card
+const glance = [SiReact, SiPython, SiCplusplus, SiTailwindcss, SiGit];
+
 function Tech({ sheet }) {
   return (
     <Sheet
       sheet={sheet}
       label="Tech stack"
       title={<h2 className="type-title">Tech</h2>}
-      hint={<p className="text-sm text-white/75">React, Python, C++ and more</p>}
+      hint={<p className="type-hint">React, Python, C++ and more</p>}
+      foot={
+        <ul className="tech-glance" aria-hidden="true">
+          {glance.map((Icon, i) => <li key={i}><Icon /></li>)}
+        </ul>
+      }
     >
       <div className="tech-grid grid gap-x-10 gap-y-8 lg:grid-cols-2">
         {categories.map(({ category, description, techs }, i) => (

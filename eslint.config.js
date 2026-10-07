@@ -5,7 +5,8 @@ import reactHooks from 'eslint-plugin-react-hooks'
 import reactRefresh from 'eslint-plugin-react-refresh'
 
 export default [
-  { ignores: ['dist'] },
+  // .claude/ holds agent worktrees (other checkouts, with their own builds)
+  { ignores: ['dist', '.claude'] },
   {
     files: ['**/*.{js,jsx}'],
     languageOptions: {
@@ -29,6 +30,8 @@ export default [
       ...react.configs['jsx-runtime'].rules,
       ...reactHooks.configs.recommended.rules,
       'react/jsx-no-target-blank': 'off',
+      // Plain JS project without the prop-types package; props are documented where they're read
+      'react/prop-types': 'off',
       'react-refresh/only-export-components': [
         'warn',
         { allowConstantExport: true },

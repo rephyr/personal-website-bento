@@ -6,7 +6,7 @@ const sections = [
   {
     title: "Education",
     items: [
-      { role: "B.Sc. Computer Science",  place: "Tampere University",              period: "2022 - ongoing",       notes: null },
+      { role: "B.Sc. Computer Science",  place: "Tampere University",              period: "2022 – ongoing",       notes: null },
       { role: "Matriculation Exam",       place: "Helsinki Upper Secondary School of Natural Sciences",    period: "2018 – 2022"},
     ],
   },
@@ -39,7 +39,7 @@ function CvSection({ section, i }) {
   // Languages read best as one line each: "Finnish ... Native"
   const compact = section.items.every((item) => !item.period && !item.notes);
   return (
-    <Develop as="section" i={i} className="cv-section">
+    <Develop as="section" i={i} className="cv-section" data-section={section.title} tabIndex={-1}>
       <h3 className="type-label">{section.title}</h3>
       <ul className="cv-list">
         {section.items.map((item) =>
@@ -70,10 +70,12 @@ function Cv({ sheet }) {
       sheet={sheet}
       label="CV"
       title={<h2 className="type-title">CV</h2>}
-      hint={
-        <ul className="space-y-1.5 text-sm text-white/75">
-          {sections.map((s) => <li key={s.title}>{s.title}</li>)}
-        </ul>
+      // The list under the title; once opened it's an index that jumps to each section
+      index={sections.map((s) => ({ key: s.title, label: s.title }))}
+      foot={
+        <a href={cvPdf} download="Emilia_Sipola_CV.pdf" className="link-quiet self-start">
+          <FiDownload aria-hidden="true" /> Download PDF
+        </a>
       }
     >
       <Develop i={0} className="cv-download">

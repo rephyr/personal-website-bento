@@ -6,6 +6,8 @@ import smPlayerImg from "../assets/smFilePlaybackExample.gif";
 import weatherImg from "../assets/WeatherappAppPicture.jpg";
 import portfolioImg from "../assets/portfolio.webp";
 
+const slug = (name) => name.toLowerCase().replace(/\W+/g, "-");
+
 // North star project: first in the hint list and featured above the others when opened
 const featured = {
   name: "Save Timelapse",
@@ -49,14 +51,13 @@ function Projects({ sheet }) {
       sheet={sheet}
       label="Projects"
       title={<h2 className="type-title">Projects</h2>}
-      hint={
-        <ul className="space-y-1.5 text-sm text-white/75">
-          <li className="text-white">{featured.name}</li>
-          {projects.map((p) => <li key={p.name}>{p.name}</li>)}
-        </ul>
-      }
+      // The list under the title; once opened it's an index that jumps to each project
+      index={[
+        { key: slug(featured.name), label: featured.name, strong: true },
+        ...projects.map((p) => ({ key: slug(p.name), label: p.name })),
+      ]}
     >
-      <Develop i={0} className="project-feature">
+      <Develop i={0} className="project-feature" data-section={slug(featured.name)} tabIndex={-1}>
         <img src={featured.image} alt={`${featured.name} replaying a Factorio factory as it grows`} className="project-shot" />
         <div className="mt-4 flex flex-wrap items-end justify-between gap-x-4 gap-y-1">
           <div>
@@ -73,7 +74,7 @@ function Projects({ sheet }) {
 
       <ol className="project-list">
         {projects.map((project, i) => (
-          <Develop key={project.name} as="li" i={i + 1} className="project">
+          <Develop key={project.name} as="li" i={i + 1} className="project" data-section={slug(project.name)} tabIndex={-1}>
             {/* Screenshots sit in monochrome with the rest of the page and develop into colour on hover */}
             <img src={project.image} alt={`Screenshot of ${project.name}`} loading="lazy" className="project-shot" />
             <div className="min-w-0">
