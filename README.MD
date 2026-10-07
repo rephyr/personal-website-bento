@@ -1,6 +1,6 @@
 # Personal Portfolio for Emilia Sipola
 
-![Portfolio preview](src/assets/websitePicture.png)
+![Portfolio preview](src/assets/portfolio.webp)
 
 🌐 **[emiliasipola.software](https://emiliasipola.software/)**
 
@@ -8,20 +8,21 @@ My personal portfolio website built with React, Vite, and Tailwind CSS.
 
 ## Features
 
-- **Bento grid layout**: sections arranged in a mosaic grid that scales to any screen size
-- **Curtain expand effect**: clicking a card expands it to fill the screen while the background photo stays fixed in world space
-- **Fade transitions**: collapsed summaries fade out and detailed content fades in after each card opens
-- **Hover scale**: cards scale up slightly on hover
+- **Photo intro**: the page opens on one photo, which is then cut into the bento cards along golden-ratio lines
+- **Cards open into sheets**: each card opens into a full sheet over the fixed photo, and its content fades in block by block
+- **Flashlight**: a soft light follows the pointer across the photo, and the rest of the board dims slightly
+- **Project shots in monochrome**: screenshots stay black and white until you hover them
+- **Phones and reduced motion**: phones get a stacked layout, and the intro and animations are skipped when reduced motion is on
 
 ## Sections
 
 | Section | Content |
 |---|---|
-| Overview | Bio, strengths, hobbies |
-| Projects | The Tab, SMFilePlayer, React Weather App |
-| Contact | GitHub, LinkedIn, Instagram, Discord, Email |
-| CV | Education, experience, languages, athletics |
-| Tech | Frontend, backend, Adobe, systems stack |
+| Overview | Bio, what I'm working on now, strengths, hobbies |
+| Projects | Save Timelapse, purr, Personal Portfolio, The Tab, SMFileParser, React Weather App |
+| Contact | GitHub, LinkedIn, Email |
+| CV | Experience, education, languages, athletics, downloadable PDF |
+| Tech | Frontend, backend, systems & games, Adobe, tools |
 
 ## Tech Stack
 
@@ -41,4 +42,12 @@ npm run dev
 
 ```bash
 npm run build
+```
+
+## CV
+
+The downloadable CV is built from `cv/cv.html`:
+
+```bash
+uv run --no-project --with weasyprint weasyprint cv/cv.html src/assets/Emilia_Sipola_CV.pdf
 ```

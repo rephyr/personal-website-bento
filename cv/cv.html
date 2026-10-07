@@ -1,0 +1,139 @@
+<!doctype html>
+<!--
+  Source for src/assets/Emilia_Sipola_CV.pdf. Rebuild it with:
+  uv run --no-project --with weasyprint weasyprint cv/cv.html src/assets/Emilia_Sipola_CV.pdf
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Emilia Sipola · CV</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 12mm 16mm 10mm; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: "Geist", "Lato", sans-serif; font-size: 8.5pt; line-height: 1.38; color: #2a2a2e; }
+  a { color: inherit; text-decoration: none; }
+
+  h1 { font-size: 23pt; font-weight: 600; letter-spacing: -0.02em; color: #111; line-height: 1.1; }
+  .tagline { margin-top: 3pt; font-size: 10pt; color: #666; }
+  .links { margin-top: 4pt; font-size: 8.5pt; }
+  .links a { color: #3a3ac0; }
+  .dot { color: #aaa; padding: 0 3pt; }
+
+  section { border-top: 0.6pt solid #ddd; margin-top: 8pt; padding-top: 7pt; }
+  h2 { font-size: 6.6pt; font-weight: 600; letter-spacing: 0.22em; text-transform: uppercase; color: #888; margin-bottom: 4pt; }
+
+  .item { margin-bottom: 4pt; break-inside: avoid; }
+  .item:last-child { margin-bottom: 0; }
+  .row { display: flex; justify-content: space-between; align-items: baseline; gap: 12pt; }
+  .role { font-weight: 600; color: #111; font-size: 9pt; }
+  .side { color: #999; font-size: 8pt; white-space: nowrap; }
+  .place { color: #666; }
+  .notes { color: #444; }
+  .stack { color: #666; }
+  .k { font-weight: 600; color: #111; }
+  em { color: #666; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Emilia Sipola</h1>
+  <p class="tagline">Software Developer<span class="dot">·</span>Tampere, Finland<span class="dot">·</span>she/her</p>
+  <p class="links">
+    <a href="mailto:sipolaemilia@proton.me">sipolaemilia@proton.me</a><span class="dot">·</span>
+    <a href="https://github.com/rephyr">github.com/rephyr</a><span class="dot">·</span>
+    <a href="https://www.linkedin.com/in/emilia-sipola-597aa7379/">linkedin.com/in/emilia-sipola-597aa7379</a><span class="dot">·</span>
+    <a href="https://emiliasipola.software/">emiliasipola.software</a>
+  </p>
+</header>
+
+<section>
+  <h2>About</h2>
+  <p>Self-employed software developer building CLI tools, automation scripts, and web apps. Currently building
+    <span class="k">purr</span>, a terminal coding agent for small local models, and an indie game in
+    <span class="k">Godot</span>. On a break from my Computer Science studies at Tampere University.</p>
+  <p style="margin-top:3pt"><span class="k">Strengths:</span> Fast learner · Full-stack range · Competitive discipline · Precise · Strong visual intuition</p>
+</section>
+
+<section>
+  <h2>Experience</h2>
+  <div class="item">
+    <div class="row"><span class="role">Software Developer</span><span class="side">2026 – present</span></div>
+    <div class="place">Self-employed</div>
+    <div class="notes">Building purr, a terminal coding agent (Python); Save Timelapse, a timelapse renderer for Factorio (Rust, Lua); and an indie game in Godot.</div>
+  </div>
+  <div class="item">
+    <div class="row"><span class="role">Food Manufacturing Cleaner</span><span class="side">Mar – Aug 2023</span></div>
+    <div class="place">ISS Palvelut Oy</div>
+  </div>
+  <div class="item">
+    <div class="row"><span class="role">Construction Assistant</span><span class="side">Summer 2021</span></div>
+    <div class="place">Asiantuntijamestarit Oy</div>
+  </div>
+  <div class="item">
+    <div class="row"><span class="role">Fencing Coach</span><span class="side">2022</span></div>
+    <div class="place">Tapanilan Erä</div>
+    <div class="notes"><em>Coached competitive fencers weekly.</em></div>
+  </div>
+</section>
+
+<section>
+  <h2>Projects</h2>
+  <div class="item">
+    <div class="row"><span class="role">Save Timelapse</span><a class="side" href="https://github.com/rephyr/save-timelapse">github.com/rephyr/save-timelapse</a></div>
+    <div><span class="stack">Rust · Lua ·</span> Turns a long Factorio playthrough into an interactive timelapse. Built for scale (hundreds of thousands of objects per factory) with its own file format, renderer and video export.</div>
+  </div>
+  <div class="item">
+    <div class="row"><span class="role">purr</span><a class="side" href="https://github.com/rephyr/purr">github.com/rephyr/purr</a></div>
+    <div><span class="stack">Python ·</span> A terminal coding agent built to get more out of small local models. Repairs the model's slips, checks every edit with lint and tests, catches loops, and splits big tasks into tickets. 82% on Terminal-Bench 2.1 with DeepSeek V4.1 Flash.</div>
+  </div>
+  <div class="item">
+    <div class="row"><span class="role">Indie game</span><span class="side">Private · In development</span></div>
+    <div><span class="stack">Godot · GDScript ·</span> A roguelike I'm designing and building on my own.</div>
+  </div>
+  <div class="item">
+    <div class="row"><span class="role">Personal Portfolio</span><a class="side" href="https://github.com/rephyr/personal-website-bento">github.com/rephyr/personal-website-bento</a></div>
+    <div><span class="stack">React · Vite · Tailwind ·</span> A bento grid of cards that open into sheets over a fixed photo background, with staged fade-ins.</div>
+  </div>
+  <div class="item">
+    <div class="row"><span class="role">The Tab</span><a class="side" href="https://github.com/rephyr/The-Tab">github.com/rephyr/The-Tab</a></div>
+    <div><span class="stack">CLI · Python · Thermal printer ·</span> Multiplayer drinking game with real-time score tracking, an all-time leaderboard and automatic receipt printing.</div>
+  </div>
+  <div class="item">
+    <div class="row"><span class="role">SMFileParser</span><a class="side" href="https://github.com/rephyr/SMFileParser">github.com/rephyr/SMFileParser</a></div>
+    <div><span class="stack">C++ ·</span> Parses .sm rhythm game charts and replays them with precise timing via simulated keyboard inputs.</div>
+  </div>
+</section>
+
+<section>
+  <h2>Education</h2>
+  <div class="item">
+    <div class="row"><span class="role">B.Sc. Computer Science</span><span class="side">2022 – on break</span></div>
+    <div class="place">Tampere University</div>
+  </div>
+  <div class="item">
+    <div class="row"><span class="role">Matriculation Exam</span><span class="side">2018 – 2022</span></div>
+    <div class="place">Helsinki Upper Secondary School of Natural Sciences</div>
+  </div>
+</section>
+
+<section>
+  <h2>Skills &amp; Languages</h2>
+  <p><span class="k">Languages:</span> Finnish (native) · English (C1) · Swedish (A2) · Italian (A2/B1)</p>
+  <p><span class="k">Tech:</span> Python · Rust · C++ · Lua · React · Vite · Tailwind · Godot · Bash · Git · Linux</p>
+  <p><span class="k">Databases:</span> SQL · SQLite</p>
+  <p><span class="k">Interests:</span> Photography · Fencing · Programming · Cooking · Music</p>
+</section>
+
+<section>
+  <h2>Athletics</h2>
+  <div class="item">
+    <div class="row"><span class="role">Top Ranking Finnish Fencer · Sabre</span></div>
+    <div class="place">9+ years active · Tapanilan Erä</div>
+    <div class="notes"><em>Finnish sabre ranking #1 (2020/21) · U20 national gold 2020</em></div>
+  </div>
+</section>
+
+</body>
+</html>

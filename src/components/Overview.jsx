@@ -2,7 +2,7 @@ import Sheet, { Develop } from "./Sheet";
 
 const strengths = ["Fast learner", "Full-stack range", "Competitive discipline", "Precise", "Strong visual intuition"];
 const hobbies = ["Photography", "Fencing", "Programming", "Cooking", "Music"];
-const currently = ["4th year CS student at Tampere University", "Exploring Linux systems and low-level programming"];
+const currently = ["Self-employed, on a break from my CS studies to build my own projects", "Building purr, a terminal coding agent", "Making an indie game in Godot"];
 
 function Overview({ sheet }) {
   return (
@@ -32,8 +32,8 @@ function Overview({ sheet }) {
         <h2 className="type-label">About</h2>
         <p className="plate-lede">
           Software developer building CLI tools, automation scripts, and web apps.
-          Currently working on <span className="font-semibold text-white">Klaava</span>, a realtime tournament
-          gambling game with RFID player cards, FastAPI, and React. Learning full-stack development and AWS.
+          Currently building <span className="font-semibold text-white">purr</span>, a terminal coding agent
+          for small local models, and an indie game in <span className="font-semibold text-white">Godot</span>.
         </p>
       </Develop>
 

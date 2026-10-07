@@ -1,5 +1,5 @@
 import Sheet, { Develop } from "./Sheet";
-import { SiPython, SiCplusplus, SiReact, SiTailwindcss, SiJavascript, SiHtml5, SiCss, SiPhp, SiSqlite, SiSqlalchemy, SiGit, SiGitlab } from "react-icons/si";
+import { SiPython, SiCplusplus, SiReact, SiTailwindcss, SiJavascript, SiHtml5, SiCss, SiPhp, SiSqlite, SiSqlalchemy, SiGit, SiGitlab, SiRust, SiLua, SiGodotengine } from "react-icons/si";
 import { FaDatabase } from "react-icons/fa";
 import adobePs from "../assets/adobe-photoshop.svg";
 import adobeLr from "../assets/adobe-lightroom.svg";
@@ -8,7 +8,7 @@ import adobePr from "../assets/adobe-premiere.svg";
 const categories = [
   {
     category: "Frontend",
-    description: "Built web apps and personal projects including a React weather app and this portfolio. Comfortable building UIs from scratch with HTML, CSS, JavaScript, React and Tailwind.",
+    description: "Built this portfolio and other web apps from scratch with HTML, CSS, JavaScript, React and Tailwind.",
     techs: [
       { name: "React",      icon: SiReact },
       { name: "Tailwind",   icon: SiTailwindcss },
@@ -19,7 +19,7 @@ const categories = [
   },
   {
     category: "Backend",
-    description: "Used Python for CLI tools and automation scripts. C++ for systems programming. PHP for university coursework. I wrote and coordinated unit tests using CakePHP and PHPUnit on the MMT project management app.",
+    description: "Python for purr, a terminal coding agent, and for CLI tools and automation scripts. C++ for systems programming. PHP for university coursework.",
     techs: [
       { name: "Python",     icon: SiPython },
       { name: "C++",        icon: SiCplusplus },
@@ -27,6 +27,15 @@ const categories = [
       { name: "SQL",        icon: FaDatabase },
       { name: "SQLite",     icon: SiSqlite },
       { name: "SQLAlchemy", icon: SiSqlalchemy },
+    ],
+  },
+  {
+    category: "Systems & games",
+    description: "Rust for Save Timelapse, a fast timelapse renderer with its own file format and video export, and Lua for its Factorio mod. Godot for my indie game.",
+    techs: [
+      { name: "Rust",  icon: SiRust },
+      { name: "Lua",   icon: SiLua },
+      { name: "Godot", icon: SiGodotengine },
     ],
   },
   {
@@ -55,7 +64,7 @@ function TechIcon({ tech: { icon: Icon, img } }) {
 }
 
 // A glance at the stack along the bottom of the collapsed card
-const glance = [SiReact, SiPython, SiCplusplus, SiTailwindcss, SiGit];
+const glance = [SiPython, SiRust, SiReact, SiCplusplus, SiGodotengine];
 
 function Tech({ sheet }) {
   return (
@@ -63,7 +72,7 @@ function Tech({ sheet }) {
       sheet={sheet}
       label="Tech stack"
       title={<h2 className="type-title">Tech</h2>}
-      hint={<p className="type-hint">React, Python, C++ and more</p>}
+      hint={<p className="type-hint">Python, Rust, React and more</p>}
       foot={
         <ul className="tech-glance" aria-hidden="true">
           {glance.map((Icon, i) => <li key={i}><Icon /></li>)}

@@ -5,6 +5,7 @@ import theTabImg from "../assets/the-tab-menu.png";
 import smPlayerImg from "../assets/smFilePlaybackExample.gif";
 import weatherImg from "../assets/WeatherappAppPicture.jpg";
 import portfolioImg from "../assets/portfolio.webp";
+import purrImg from "../assets/purr-thumb.webp";
 
 const slug = (name) => name.toLowerCase().replace(/\W+/g, "-");
 
@@ -20,8 +21,14 @@ const featured = {
 
 const projects = [
   {
+    name: "purr",
+    description: "A cute coding agent for the terminal, built to get more out of small local models on long, vague tasks. It repairs the model's slips, checks every edit with lint and tests, catches loops, and splits big tasks into small tickets. Written in Python; scores 82% on Terminal-Bench 2.1 with DeepSeek V4.1 Flash.",
+    image: purrImg,
+    url: "https://github.com/rephyr/purr",
+  },
+  {
     name: "Personal Portfolio",
-    description: "This portfolio website. Website includes bento grid with a curtain expand effect, world-space photo background, and smooth fade transitions. Built with React, Vite, and Tailwind.",
+    description: "This website: a bento grid of cards that open into sheets over a fixed photo background, with staged fade-ins. Built with React, Vite and Tailwind.",
     image: portfolioImg,
     url: "https://github.com/rephyr/personal-website-bento",
   },
@@ -32,10 +39,10 @@ const projects = [
     url: "https://github.com/rephyr/The-Tab",
   },
   {
-    name: "SMFilePlayer",
+    name: "SMFileParser",
     description: "C++ bot that parses .sm rhythm game charts and plays them back with precise timing by simulating keyboard inputs. Works with StepMania and Etterna.",
     image: smPlayerImg,
-    url: "https://github.com/rephyr/SMFilePlayer",
+    url: "https://github.com/rephyr/SMFileParser",
   },
   {
     name: "React Weather App",

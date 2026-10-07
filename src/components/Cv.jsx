@@ -6,13 +6,14 @@ const sections = [
   {
     title: "Education",
     items: [
-      { role: "B.Sc. Computer Science",  place: "Tampere University",              period: "2022 – ongoing",       notes: null },
+      { role: "B.Sc. Computer Science",  place: "Tampere University",              period: "2022 – on break",      notes: null },
       { role: "Matriculation Exam",       place: "Helsinki Upper Secondary School of Natural Sciences",    period: "2018 – 2022"},
     ],
   },
   {
     title: "Experience",
     items: [
+      { role: "Software Developer",          place: "Self-employed",           period: "2026 – present",  notes: "Building purr, a terminal coding agent (Python); Save Timelapse, a timelapse renderer for Factorio (Rust, Lua); and an indie game in Godot." },
       { role: "Food Manufacturing Cleaner",  place: "ISS Palvelut Oy",          period: "Mar – Aug 2023",  notes: null },
       { role: "Construction Assistant",      place: "Asiantuntijamestarit Oy",   period: "Summer 2021",     notes: null },
       { role: "Fencing Coach",               place: "Tapanilan Erä",             period: "2022",            notes: "Coached competitive fencers weekly." },

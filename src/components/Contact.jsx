@@ -1,12 +1,11 @@
 import Sheet, { Develop } from "./Sheet";
-import { FaGithub, FaLinkedin, FaInstagram, FaEnvelope } from "react-icons/fa";
+import { FaGithub, FaLinkedin, FaEnvelope } from "react-icons/fa";
 import { FiArrowUpRight } from "react-icons/fi";
 
 const contacts = [
   { label: "GitHub",    value: "rephyr",                  href: "https://github.com/rephyr",                             icon: FaGithub },
   { label: "LinkedIn",  value: "Emilia Sipola",            href: "https://www.linkedin.com/in/emilia-sipola-597aa7379/",  icon: FaLinkedin },
-  { label: "Instagram", value: "@emiliasipolaa",           href: "https://www.instagram.com/emiliasipolaa",               icon: FaInstagram },
-  { label: "Email",     value: "sipolaemiliaa@gmail.com",  href: "mailto:sipolaemiliaa@gmail.com",                        icon: FaEnvelope },
+  { label: "Email",     value: "sipolaemilia@proton.me",  href: "mailto:sipolaemilia@proton.me",                        icon: FaEnvelope },
 ];
 
 const email = contacts.find((c) => c.label === "Email");
@@ -50,7 +49,10 @@ function Contact({ sheet }) {
                 <Icon aria-hidden="true" className="text-base" />
                 {label}
               </span>
-              <span className="contact-value">{value}</span>
+              {/* A narrow sheet wraps the email at the @ instead of mid-word */}
+              <span className="contact-value">
+                {value.includes("@") ? <>{value.split("@")[0]}<wbr />@{value.split("@")[1]}</> : value}
+              </span>
               <FiArrowUpRight aria-hidden="true" className="contact-arrow" />
             </a>
           </Develop>
