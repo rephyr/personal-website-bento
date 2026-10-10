@@ -2,7 +2,7 @@ import Sheet, { Develop } from "./Sheet";
 
 const strengths = ["Fast learner", "Full-stack range", "Competitive discipline", "Precise", "Strong visual intuition"];
 const hobbies = ["Photography", "Fencing", "Programming", "Cooking", "Music"];
-const currently = ["Self-employed, on a break from my CS studies to build my own projects", "Building purr, a terminal coding agent", "Making an indie game in Godot"];
+const currently = ["Running my own company, Mrrp Software", "On a break from my CS studies to build my own projects", "Building purr, a terminal coding agent", "Making an indie game in Godot"];
 
 function Overview({ sheet }) {
   return (
@@ -14,7 +14,7 @@ function Overview({ sheet }) {
           <h1 className="type-display">Emilia Sipola</h1>
           {/* Each part stays whole when the line wraps, and the lines balance */}
           <p className="type-hint mt-2.5 text-balance">
-            <span className="whitespace-nowrap">Software developer ·</span>{" "}
+            <span className="whitespace-nowrap">Owner of Mrrp Software ·</span>{" "}
             <span className="whitespace-nowrap">Tampere, Finland ·</span>{" "}
             <span className="whitespace-nowrap">she/her</span>
           </p>
@@ -31,7 +31,9 @@ function Overview({ sheet }) {
       <Develop i={0} as="section" className="plate-block">
         <h2 className="type-label">About</h2>
         <p className="plate-lede">
-          Software developer building CLI tools, automation scripts, and web apps.
+          Software developer and owner of{" "}
+          <a className="font-semibold text-white underline underline-offset-4" href="https://mrrp.games/">Mrrp Software</a>,
+          my own small company making games and software tools. I build CLI tools, automation scripts, and web apps.
           Currently building <span className="font-semibold text-white">purr</span>, a terminal coding agent
           for small local models, and an indie game in <span className="font-semibold text-white">Godot</span>.
         </p>

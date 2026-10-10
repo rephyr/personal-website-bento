@@ -13,7 +13,7 @@ const sections = [
   {
     title: "Experience",
     items: [
-      { role: "Software Developer",          place: "Self-employed",           period: "2026 – present",  notes: "Building purr, a terminal coding agent (Python); Save Timelapse, a timelapse renderer for Factorio (Rust, Lua); and an indie game in Godot." },
+      { role: "Founder & Owner",             place: "Mrrp Software",           period: "2026 – present",  notes: "My own company (sole proprietorship) making games and software tools. Building purr, a terminal coding agent (Python); Save Timelapse, a timelapse renderer for Factorio (Rust, Lua); and an indie game in Godot." },
       { role: "Food Manufacturing Cleaner",  place: "ISS Palvelut Oy",          period: "Mar – Aug 2023",  notes: null },
       { role: "Construction Assistant",      place: "Asiantuntijamestarit Oy",   period: "Summer 2021",     notes: null },
       { role: "Fencing Coach",               place: "Tapanilan Erä",             period: "2022",            notes: "Coached competitive fencers weekly." },
