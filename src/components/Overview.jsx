@@ -32,7 +32,7 @@ function Overview({ sheet }) {
         <h2 className="type-label">About</h2>
         <p className="plate-lede">
           Software developer and owner of{" "}
-          <a className="font-semibold text-white underline underline-offset-4" href="https://mrrp.games/">Mrrp Software</a>,
+          <a className="font-semibold text-white underline underline-offset-4" href="https://mrrpsoftware.com/">Mrrp Software</a>,
           my own small company making games and software tools. I build CLI tools, automation scripts, and web apps.
           Currently building <span className="font-semibold text-white">purr</span>, a terminal coding agent
           for small local models, and an indie game in <span className="font-semibold text-white">Godot</span>.
